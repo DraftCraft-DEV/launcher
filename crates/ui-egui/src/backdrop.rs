@@ -69,7 +69,8 @@ pub(crate) fn paint(ctx: &egui::Context, painter: &Painter, rect: Rect, t: &Toke
             let (u, v) = (col as f32 / MESH_COLS as f32, row as f32 / MESH_ROWS as f32);
             // 0 at one corner, 1 at the opposite one; one full light-dark-light cycle across.
             let along = (u + v) / 2.0 - phase;
-            let k = 0.5 + 0.5 * (along * std::f32::consts::TAU).cos();
+            // Cubed, so the light part is a narrow band and the window stays mostly dark.
+            let k = (0.5 + 0.5 * (along * std::f32::consts::TAU).cos()).powi(3);
             let pos = pos2(rect.left() + u * rect.width(), rect.top() + v * rect.height());
             mesh.colored_vertex(pos, p.dark.lerp_to_gamma(p.light, k));
         }
