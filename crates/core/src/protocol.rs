@@ -173,7 +173,7 @@ pub const INSTALL_CANCELLED: &str = "install cancelled";
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum Origin {
     /// ArtCraft's release feed (storyteller-web), which polls GitHub for everyone.
-    ArtCraftApi,
+    ReleaseFeed,
     /// GitHub directly: the fallback.
     GitHub,
 }
@@ -181,7 +181,7 @@ pub enum Origin {
 impl Origin {
     pub fn label(self) -> &'static str {
         match self {
-            Self::ArtCraftApi => "ArtCraft API",
+            Self::ReleaseFeed => "release feed",
             Self::GitHub => "GitHub",
         }
     }

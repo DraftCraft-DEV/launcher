@@ -8,7 +8,7 @@ use std::rc::Rc;
 use dev_launcher_core::protocol::{Backend, Capabilities, Command, Event, JobPhase, LatestRelease, Origin, Source};
 use dev_launcher_core::release::{Asset, Release};
 use dev_launcher_core::status::InstallSource;
-use dev_launcher_core::{Arch, Installed, Os, Platform, SUITE, version};
+use dev_launcher_core::{Arch, Installed, Os, Platform, version};
 use dev_launcher_ui_egui::settings::ViewMode;
 use dev_launcher_ui_egui::{Host, LauncherUi, Settings};
 use egui_kittest::Harness;
@@ -69,9 +69,9 @@ fn release(id: &str, v: &str, at: i64) -> Release {
 
 fn events() -> Vec<Event> {
     let mut ev = Vec::new();
-    for (i, app) in SUITE.iter().enumerate() {
+    for (i, app) in dev_launcher_core::hosted_catalog::apps().iter().enumerate() {
         let latest = LatestRelease::Found(release(app.id, "0.5.0", NOW - 40 * 86_400 - i as i64 * 600));
-        ev.push(Event::Latest { app: app.id.into(), latest, from: Origin::ArtCraftApi });
+        ev.push(Event::Latest { app: app.id.into(), latest, from: Origin::ReleaseFeed });
         let installed = matches!(app.id, "photocraft" | "lightcraft").then(|| Installed {
             version: version::parse(if app.id == "photocraft" { "0.4.1" } else { "0.5.0" }),
             source: InstallSource::MacApp,
@@ -130,10 +130,10 @@ fn hungarian_ui_translates_labels_dates_and_messages() {
     // Product names stay in English.
     assert!(h.query_by_label("Launcher").is_none());
     h.get_by_label("D.E.V. App Suite");
-    h.get_by_label("Képszerkesztés");
+    h.get_by_label("2D CAD és műszaki rajz");
     h.get_by_label("Frissítés: 0.5.0");
     h.get_by_label_contains("Ellenőrzőösszeg ellenőrzése…");
-    h.get_by_label_contains("Ellenőrizve: 3 perce · ArtCraft API");
+    h.get_by_label_contains("Ellenőrizve: 3 perce · release feed");
     h.get_by_label("LightCraft frissítve. Verzió: 0.5.0");
 
     let mut table = harness(ViewMode::Table);
@@ -174,7 +174,7 @@ fn check_settings_layout() {
         let discord = h.get_by_label("Csatlakozás a Discordhoz").rect();
         assert!(screen.contains_rect(discord), "community links must be reachable by scrolling");
         let mut links = vec![discord];
-        for label in ["Webhely", "GitHub", "X", "Instagram", "LinkedIn", "YouTube", "TikTok"] {
+        for label in ["Webhely", "GitHub"] {
             let candidates: Vec<_> = h
                 .query_all_by_label(label)
                 .map(|n| n.rect())

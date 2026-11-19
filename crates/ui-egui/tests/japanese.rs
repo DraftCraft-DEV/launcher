@@ -9,7 +9,7 @@ use std::rc::Rc;
 use dev_launcher_core::protocol::{Backend, Capabilities, Command, Event, JobPhase, LatestRelease, Origin, PausedDownload, Source};
 use dev_launcher_core::release::{Asset, Release};
 use dev_launcher_core::status::InstallSource;
-use dev_launcher_core::{Arch, Installed, Os, Platform, SUITE, version};
+use dev_launcher_core::{Arch, Installed, Os, Platform, version};
 use dev_launcher_ui_egui::settings::ViewMode;
 use dev_launcher_ui_egui::{Host, LauncherUi, Settings};
 use egui_kittest::Harness;
@@ -84,12 +84,12 @@ fn events() -> Vec<Event> {
         ev.push(Event::Latest {
             app: (*id).into(),
             latest: LatestRelease::Found(release(id, v, NOW - 86_400 - i as i64 * 600)),
-            from: Origin::ArtCraftApi,
+            from: Origin::ReleaseFeed,
         });
     }
-    ev.push(Event::Latest { app: "soundcraft".into(), latest: LatestRelease::None, from: Origin::ArtCraftApi });
+    ev.push(Event::Latest { app: "soundcraft".into(), latest: LatestRelease::None, from: Origin::ReleaseFeed });
     let installed = [("photocraft", "0.4.1"), ("lightcraft", "0.4.0"), ("wordcraft", "0.3.0"), ("effectcraft", "0.5.0")];
-    for app in &SUITE {
+    for app in dev_launcher_core::hosted_catalog::apps() {
         let inst = installed.iter().find(|(id, _)| *id == app.id).map(|(_, v)| Installed {
             version: version::parse(v),
             source: InstallSource::MacApp,
@@ -184,7 +184,7 @@ fn japanese_switches_persists_and_keeps_install_actions() {
     h.get_by_label("完了").click();
     h.run_steps(3);
     h.get_by_label("画像編集");
-    h.get_by_label_contains("最終確認: 3 分前 · 取得元: ArtCraft API");
+    h.get_by_label_contains("最終確認: 3 分前 · 取得元: release feed");
     h.get_by_label("0.5.0 に更新");
     // Product names stay in English.
     assert!(h.query_by_label("Launcher").is_none());

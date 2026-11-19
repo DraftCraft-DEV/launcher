@@ -55,8 +55,13 @@ fn slice(items: &[String]) -> String {
     format!("&{items:?}")
 }
 /// The Rust source of one catalog: `pub const <suite>: [CraftApp; N]` and `pub const <details>: [AppDetails; M]`.
-fn generate(path: &str, suite: &str, details_name: &str) -> Result<(String, String), Box<dyn Error>> {
-    let manifest: Manifest = toml::from_str(&fs::read_to_string(path)?)?;
+fn generate(paths: &[&str], suite: &str, details_name: &str) -> Result<(String, String), Box<dyn Error>> {
+    let mut text = String::new();
+    for path in paths {
+        text.push_str(&fs::read_to_string(path)?);
+        text.push('\n');
+    }
+    let manifest: Manifest = toml::from_str(&text)?;
     let mut apps = format!("pub const {suite}: [CraftApp; {}] = [\n", manifest.apps.len());
     let count = manifest.apps.iter().filter(|a| a.details.is_some()).count();
     let mut details = format!("pub const {details_name}: [AppDetails; {count}] = [\n");
@@ -110,11 +115,12 @@ fn generate(path: &str, suite: &str, details_name: &str) -> Result<(String, Stri
 fn main() -> Result<(), Box<dyn Error>> {
     println!("cargo:rerun-if-changed=catalog.toml");
     println!("cargo:rerun-if-changed=tests/fixtures/test-catalog.toml");
-    let (mut apps, mut details) = generate("catalog.toml", "SUITE", "DETAILS")?;
-    // Test builds of the other crates turn on `test-catalog`: the upstream app list, so their
-    // tests can exercise former names and other publishers. Releases never do, and get none.
+    let (mut apps, mut details) = generate(&["catalog.toml"], "SUITE", "DETAILS")?;
+    // Test builds of the other crates turn on `test-catalog`: the real catalog followed by the
+    // upstream app list, so their tests can exercise former names and other publishers.
+    // Releases never do, and get none.
     if env::var_os("CARGO_FEATURE_TEST_CATALOG").is_some() {
-        let (test_apps, test_details) = generate("tests/fixtures/test-catalog.toml", "TEST_SUITE", "TEST_DETAILS")?;
+        let (test_apps, test_details) = generate(&["catalog.toml", "tests/fixtures/test-catalog.toml"], "TEST_SUITE", "TEST_DETAILS")?;
         apps.push_str(&test_apps);
         details.push_str(&test_details);
     } else {

@@ -13,7 +13,7 @@ use dev_launcher_core::protocol::{
 };
 use dev_launcher_core::release::{Asset, Release};
 use dev_launcher_core::status::InstallSource;
-use dev_launcher_core::{Arch, Installed, Os, Platform, SUITE, version};
+use dev_launcher_core::{Arch, Installed, Os, Platform, version};
 use dev_launcher_ui_egui::settings::ViewMode;
 use dev_launcher_ui_egui::{Host, LauncherUi, Settings};
 use egui_kittest::Harness;
@@ -190,12 +190,12 @@ fn events() -> Vec<Event> {
         ev.push(Event::Latest {
             app: (*id).into(),
             latest: LatestRelease::Found(release(id, v, NOW - 86_400 - i as i64 * 600)),
-            from: Origin::ArtCraftApi,
+            from: Origin::ReleaseFeed,
         });
     }
-    ev.push(Event::Latest { app: "soundcraft".into(), latest: LatestRelease::None, from: Origin::ArtCraftApi });
+    ev.push(Event::Latest { app: "soundcraft".into(), latest: LatestRelease::None, from: Origin::ReleaseFeed });
     let installed = [("photocraft", "0.4.1"), ("lightcraft", "0.4.0"), ("wordcraft", "0.3.0"), ("effectcraft", "0.5.0")];
-    for app in &SUITE {
+    for app in dev_launcher_core::hosted_catalog::apps() {
         let inst = installed.iter().find(|(id, _)| *id == app.id).map(|(_, v)| Installed {
             version: version::parse(v),
             source: InstallSource::MacApp,
@@ -1892,7 +1892,7 @@ fn a_retry_update_button_keeps_to_its_slot_and_leaves_room_for_the_menu() {
         ev.push(Event::Latest {
             app: "effectcraft".into(),
             latest: LatestRelease::Found(release("effectcraft", "0.12.0", NOW)),
-            from: Origin::ArtCraftApi,
+            from: Origin::ReleaseFeed,
         });
         ev.push(Event::ReadyToInstall { app: "effectcraft".into(), ready: true });
         let (mut h, _) = harness_with(ev, view, egui::Theme::Dark, true, 1.0);
@@ -1993,6 +1993,8 @@ fn table_view_and_light_theme() {
 /// Pin floats an app above Name sort; reorder via settings is reflected; Hide clears the pin.
 fn pinning_an_app_keeps_it_on_top_until_unpinned() {
     let (mut h, _) = harness(ViewMode::Table, egui::Theme::Dark, true);
+    // Tall enough that every row's menu opens inside the window.
+    h.set_size(egui::vec2(1180.0, 1600.0));
     h.run_steps(6);
     // Name sort would put CADCraft before PhotoCraft; a pin must still win.
     h.state_mut().as_mut().unwrap().settings.sort = dev_launcher_ui_egui::settings::SortKey::Name;
@@ -2319,7 +2321,7 @@ fn name_and_tagline_are_centred_on_the_icon() {
 
 /// The app names in the order the table shows them.
 fn order(h: &Harness<'_, Option<LauncherUi>>) -> Vec<String> {
-    let names: Vec<&str> = SUITE.iter().map(|a| a.name).collect();
+    let names: Vec<&str> = dev_launcher_core::hosted_catalog::apps().iter().map(|a| a.name).collect();
     let mut found: Vec<(f32, String)> = h
         .query_all(egui_kittest::kittest::by())
         .filter_map(|n| {
@@ -2530,20 +2532,13 @@ fn all_opened(h: &mut Harness<'_, Option<LauncherUi>>, label: &str) -> Vec<Strin
 fn links_open_the_right_pages() {
     let (mut h, _) = harness(ViewMode::Grid, egui::Theme::Dark, true);
     h.run_steps(6);
-    assert_eq!(click_opens(&mut h, "Discord").as_deref(), Some("https://discord.gg/artcraft"));
-    // The footer's ArtCraft links and each card's own pages.
+    assert_eq!(click_opens(&mut h, "Discord").as_deref(), Some("https://discord.gg/YgRK8Eww9x"));
+    // The footer's D.E.V. links and each card's own pages.
     let github = all_opened(&mut h, "GitHub");
-    assert!(github.contains(&"https://github.com/storytold".to_string()), "{github:?}");
-    assert!(github.contains(&"https://github.com/storytold/photocraft".to_string()), "{github:?}");
+    assert!(github.contains(&"https://github.com/DraftCraft-DEV".to_string()), "{github:?}");
+    assert!(github.contains(&"https://github.com/DraftCraft-DEV/DraftCraft".to_string()), "{github:?}");
     let sites = all_opened(&mut h, "Website");
-    assert!(sites.contains(&"https://getartcraft.com".to_string()), "{sites:?}");
-    assert_eq!(sites, vec!["https://getartcraft.com".to_string()], "{sites:?}");
-    // Social icons in the footer.
-    assert_eq!(click_opens(&mut h, "X").as_deref(), Some("https://x.com/get_artcraft"));
-    assert_eq!(click_opens(&mut h, "YouTube").as_deref(), Some("https://www.youtube.com/@OfficialArtcraftStudios"));
-    assert_eq!(click_opens(&mut h, "TikTok").as_deref(), Some("https://www.tiktok.com/@artcraft.studios"));
-    assert_eq!(click_opens(&mut h, "Instagram").as_deref(), Some("https://www.instagram.com/officialartcraftstudios"));
-    assert_eq!(click_opens(&mut h, "LinkedIn").as_deref(), Some("https://www.linkedin.com/company/artcraft-ai"));
+    assert_eq!(sites, vec!["https://draftcraft.dev".to_string()], "{sites:?}");
     // The … menu.
     h.get_all_by_label_contains("More actions").next().unwrap().click();
     h.run_steps(3);
@@ -2588,7 +2583,7 @@ fn hostile_release_asset_urls_never_reach_the_opener() {
 fn discord_link_opens_app_when_discord_is_installed() {
     let (mut h, _) = harness_with_discord(Some(dev_launcher_core::catalog::DISCORD_APP_URL));
     h.run_steps(6);
-    assert_eq!(click_opens(&mut h, "Discord").as_deref(), Some("discord://-/invite/artcraft"));
+    assert_eq!(click_opens(&mut h, "Discord").as_deref(), Some("discord://-/invite/YgRK8Eww9x"));
 }
 
 #[test]
@@ -2925,8 +2920,8 @@ fn a_freebsd_system_binary_is_not_offered_an_update_it_would_refuse() {
         origin: None,
         installation: None,
     };
-    let mut ev = vec![Event::Latest { app: "photocraft".into(), latest: LatestRelease::Found(tarball), from: Origin::ArtCraftApi }];
-    for app in &SUITE {
+    let mut ev = vec![Event::Latest { app: "photocraft".into(), latest: LatestRelease::Found(tarball), from: Origin::ReleaseFeed }];
+    for app in dev_launcher_core::hosted_catalog::apps() {
         ev.push(Event::Detected { app: app.id.into(), installed: (app.id == "photocraft").then(|| system.clone()) });
     }
     // What the native backend answers for this copy: an install would refuse it.
@@ -3053,10 +3048,10 @@ fn the_footer_names_the_services_behind_what_is_on_screen() {
             h.get_by_label_contains("Checked ").accesskit_node().label().or_else(|| h.get_by_label_contains("Checked ").accesskit_node().value());
         label.unwrap_or_default()
     };
-    assert_eq!(footer(Vec::new()), "Checked 3 min ago · using ArtCraft API");
+    assert_eq!(footer(Vec::new()), "Checked 3 min ago · using release feed");
     let from_github =
         vec![Event::Latest { app: "wordcraft".into(), latest: LatestRelease::Found(release("wordcraft", "0.3.1", NOW)), from: Origin::GitHub }];
-    assert_eq!(footer(from_github), "Checked 3 min ago · using ArtCraft API and GitHub");
+    assert_eq!(footer(from_github), "Checked 3 min ago · using release feed and GitHub");
 }
 
 #[test]
@@ -3584,7 +3579,7 @@ fn every_page_opens_and_pages_through_its_pictures() {
     h.set_size(egui::vec2(1180.0, 3000.0));
     h.run_steps(8);
     for d in &dev_launcher_core::details::DETAILS {
-        let name = SUITE.iter().find(|a| a.id == d.id).map(|a| a.name).unwrap_or(d.id);
+        let name = dev_launcher_core::hosted_catalog::apps().iter().find(|a| a.id == d.id).map(|a| a.name).unwrap_or(d.id);
         h.get_by_label(&format!("{name} details")).scroll_to_me();
         h.run_steps(3);
         h.get_by_label(&format!("{name} details")).click();
@@ -3654,7 +3649,7 @@ fn the_drawer_and_the_enlarged_picture_survive_any_window_size() {
 
 #[test]
 /// At 720–1180 px the rate-limit notice stays readable and clear of the footer's checked time
-/// and eight right-side links.
+/// and three right-side links.
 fn the_rate_limit_notice_never_runs_under_the_footer_links() {
     for width in [720.0, 960.0, 1180.0] {
         let mut evs = events();
@@ -3689,12 +3684,12 @@ fn the_rate_limit_notice_never_runs_under_the_footer_links() {
         let checked = h.get_by_label_contains("Checked ").rect();
         // Cut short in a narrow window, but enough of it left to read.
         assert!(notice.width() >= 120.0 && notice.right() <= width, "{width}: notice {notice:?}");
-        // Everything on the footer's right: the website, GitHub and Discord icons and the social icons.
+        // Everything on the footer's right: the website, GitHub and Discord icons.
         let mut right = Vec::new();
-        for label in ["Website", "GitHub", "Discord", "X", "YouTube", "TikTok", "Instagram", "LinkedIn"] {
+        for label in ["Website", "GitHub", "Discord"] {
             right.extend(h.query_all_by_label(label).map(|n| n.rect()).filter(|r| (r.center().y - notice.center().y).abs() < 12.0));
         }
-        assert_eq!(right.len(), 8, "{width}: {right:?}");
+        assert_eq!(right.len(), 3, "{width}: {right:?}");
         assert!(h.query_by_label_contains("Installing for").is_none(), "{width}: the footer no longer names the platform");
         for r in right {
             assert!(!r.intersects(notice), "{width}: notice {notice:?} overlaps {r:?}");
@@ -4063,7 +4058,7 @@ fn download_size_preview_uses_the_managed_plan_or_manual_platform_formats() {
         let mut backend = Some(Windows(
             Fake {
                 events: vec![
-                    Event::Latest { app: "photocraft".into(), latest: LatestRelease::Found(r), from: Origin::ArtCraftApi },
+                    Event::Latest { app: "photocraft".into(), latest: LatestRelease::Found(r), from: Origin::ReleaseFeed },
                     Event::Detected { app: "photocraft".into(), installed: None },
                     Event::CheckFinished { at: NOW, source: Source::GitHubApi, rate_limited_until: None },
                 ],

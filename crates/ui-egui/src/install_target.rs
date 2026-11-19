@@ -127,7 +127,7 @@ mod tests {
 
     #[test]
     fn a_fresh_install_tries_the_preferred_format_then_the_rest() {
-        let app = &dev_launcher_core::SUITE[0];
+        let app = &dev_launcher_core::hosted_catalog::apps()[0];
         assert_eq!(fresh_kinds(app, Os::Windows, &[]), [PackageKind::Msi, PackageKind::PortableZip]);
         assert_eq!(fresh_kinds(app, Os::Windows, &[PackageKind::PortableZip]), [PackageKind::PortableZip, PackageKind::Msi]);
         // A preference this platform cannot install is skipped, as the backend does.
@@ -142,7 +142,8 @@ mod tests {
     #[test]
     fn an_update_keeps_the_installed_copys_format_as_the_backend_does() {
         use PackageKind::{Dmg, Msi, PortableZip};
-        let app = &dev_launcher_core::SUITE[0];
+        // A fixture app whose macOS build has a known signing team, so its DMG installs.
+        let app = dev_launcher_core::CraftApp::by_id("photocraft").unwrap();
         let kinds = |os, source: Option<InstallSource>, preferred: &[PackageKind]| install_kinds(app, os, source.map(installed).as_ref(), preferred);
         // The launcher's own copy on Windows is its portable ZIP, even with MSI preferred.
         assert_eq!(kinds(Os::Windows, Some(InstallSource::Launcher), &[Msi]), [PortableZip]);

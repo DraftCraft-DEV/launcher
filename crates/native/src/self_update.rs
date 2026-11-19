@@ -4,6 +4,23 @@
 
 use std::ffi::OsString;
 
+/// D.E.V. Launcher as craft-update describes an app: its own id, name, repository and bundle id,
+/// so self-update fetches `dev-launcher-<ver>-…` from DraftCraft-DEV/launcher (craft-update's
+/// built-in `suite::LAUNCHER` is ArtCraft Launcher's and must never be used here). macOS updates
+/// still expect craft-update's built-in Developer ID team, so on a Mac the update is refused until
+/// craft-update accepts this app's own team: a safe failure, never an unsigned install.
+pub static LAUNCHER: craft_update::App = craft_update::App {
+    developer: "DraftCraft Engineering Ventures",
+    bundle_id_override: Some("dev.draftcraft.Launcher"),
+    accent: Some([0xb6, 0xee, 0x2b]),
+    ..craft_update::App::new(
+        dev_launcher_core::catalog::LAUNCHER_ID,
+        "D.E.V. Launcher",
+        "Installs and updates the D.E.V. App Suite",
+        dev_launcher_core::catalog::LAUNCHER_REPO,
+    )
+};
+
 use dev_launcher_core::PackageKind;
 use dev_launcher_core::platform::Platform;
 use dev_launcher_core::protocol::JobPhase;
@@ -17,17 +34,17 @@ pub use craft_update::self_update::{FINISH_FLAG, Install, PRETEND_VAR};
 
 /// The version this launcher counts as (see [`PRETEND_VAR`]).
 pub fn current_version() -> Option<Version> {
-    craft_update::self_update::current_version(&craft_update::suite::LAUNCHER, env!("CARGO_PKG_VERSION"))
+    craft_update::self_update::current_version(&LAUNCHER, env!("CARGO_PKG_VERSION"))
 }
 
 /// How this copy is installed, if it's one the launcher knows how to replace.
 pub fn current() -> Option<Install> {
-    craft_update::self_update::current(&craft_update::suite::LAUNCHER)
+    craft_update::self_update::current(&LAUNCHER)
 }
 
 /// Whether this copy can update itself: [`current`] finds it and, on Windows, it is signed.
 pub fn is_self_updating() -> bool {
-    craft_update::self_update::is_self_updating(&craft_update::suite::LAUNCHER)
+    craft_update::self_update::is_self_updating(&LAUNCHER)
 }
 
 fn to_update_paths(paths: &Paths) -> craft_update::Paths {
@@ -115,7 +132,7 @@ pub fn update(
         });
     };
     craft_update::self_update::update(
-        &craft_update::suite::LAUNCHER,
+        &LAUNCHER,
         install,
         &update_release,
         update_platform,
@@ -161,13 +178,13 @@ fn update_kind(install: &Install) -> craft_update::PackageKind {
 /// Whether `release` has the file that updating `install` on `platform` downloads ([`kind`]),
 /// picked as [`update`] picks it. The pick reads only the file names, so the repo is left empty.
 pub fn installs_from(install: &Install, release: &Release, platform: Platform) -> bool {
-    let app = &craft_update::suite::LAUNCHER;
+    let app = &LAUNCHER;
     craft_update::pick_asset(&to_update_release(release, ""), &[app.id], to_update_platform(platform), &[update_kind(install)]).is_some()
 }
 
 /// Finishes an update when this program was started as the update helper.
 pub fn finish(args: &[OsString]) -> Option<Result<(), String>> {
-    craft_update::self_update::finish(&craft_update::suite::LAUNCHER, args)
+    craft_update::self_update::finish(&LAUNCHER, args)
 }
 
 #[cfg(test)]
@@ -179,7 +196,7 @@ mod tests {
     /// repository, and is refused as the launcher's own.
     #[test]
     fn the_update_checks_links_against_the_repo_the_release_came_from() {
-        let app = &craft_update::suite::LAUNCHER;
+        let app = &LAUNCHER;
         let sums = |name: &str| [("a".repeat(64), name.to_string())];
         let renamed =
             dev_launcher_core::release::release_from_sums("storytold/dev-launcher-next", "v0.9.0", &sums("dev-launcher-0.9.0-linux-x86_64.AppImage"));
@@ -200,7 +217,7 @@ mod tests {
     fn a_release_without_the_installed_format_for_this_platform_does_not_install() {
         use dev_launcher_core::platform::{Arch, Os};
         use std::path::PathBuf;
-        let app = &craft_update::suite::LAUNCHER;
+        let app = &LAUNCHER;
         let release = |names: &[&str]| {
             let sums: Vec<(String, String)> = names.iter().map(|n| ("a".repeat(64), (*n).to_string())).collect();
             dev_launcher_core::release::release_from_sums(app.repo, "v0.9.0", &sums)
