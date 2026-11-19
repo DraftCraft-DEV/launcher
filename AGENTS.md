@@ -116,8 +116,10 @@ text use the system's own font; never bundle one.
 
 ### Branches
 
-Every change goes through a pull request the owner reviews. Agents never merge to `main` and never
-push to it.
+`draftcraft-launcher` is the default branch and the main line of D.E.V. Launcher; agents push
+their work there. `artcraft-launcher` is a record of the ArtCraft Launcher code this project started
+from: never push to it, merge into it or delete it. Every push to `draftcraft-launcher` builds test
+downloads (`.github/workflows/test-build.yml`, under the run's Artifacts).
 
 ## 3. Before you finish a task
 
