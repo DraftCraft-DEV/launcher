@@ -70,7 +70,6 @@ contents:
   - src: ${STAGE}/usr/bin/dev-launcher
     dst: /usr/bin/dev-launcher
     file_info: { mode: 0755 }
-    file_info: { mode: 0755 }
   - src: ${STAGE}/usr/share/
     dst: /usr/share/
     type: tree
