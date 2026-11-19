@@ -97,7 +97,7 @@
 	Show the window on the current desktop	在当前桌面显示窗口
 	Start D.E.V. Launcher when I log in	登录时启动 D.E.V. Launcher
 	Community	社区
-	Questions, ideas and news from the ArtCraft team	与 ArtCraft 团队交流问题、想法和动态
+	Questions, ideas and news from the DraftCraft team	与 DraftCraft 团队交流问题、想法和动态
 	Appearance	外观
 	Quit D.E.V. Launcher	退出 D.E.V. Launcher
 	Done	完成
@@ -130,8 +130,8 @@ month	Dec	12月
 	Installing for {platform}	安装平台：{platform}
 	Downloads for {platform}	下载平台：{platform}
 	No downloads for this system	此系统暂无可用下载
-	Join the ArtCraft community on Discord	加入 Discord 上的 ArtCraft 社区
-	ArtCraft on {name}	ArtCraft 的 {name} 主页
+	Join the DraftCraft community on Discord	加入 Discord 上的 DraftCraft 社区
+	DraftCraft on {name}	DraftCraft 的 {name} 主页
 	Available to install	可安装
 	Available	可用
 	Installed · up to date	已安装 · 已是最新
@@ -168,7 +168,7 @@ month	Dec	12月
 	Downloads the new version, replaces this one and opens it again	下载新版本，替换当前版本并重新打开
 	Couldn't check for updates: {f}	无法检查更新：{f}
 	GitHub repository	GitHub 仓库
-	ArtCraft	ArtCraft
+	DraftCraft	DraftCraft
 	Update 1 app	更新 1 个应用
 	Update all ({count})	全部更新（{count}）
 	⊞  Grid	⊞  网格
@@ -248,28 +248,11 @@ filter	Installed	已安装
 	Show in Explorer	在资源管理器中显示
 	Show D.E.V. Launcher	显示 D.E.V. Launcher
 	Check for Updates	检查更新
-	Visit getartcraft.com	访问 getartcraft.com
-	ArtCraft on GitHub	ArtCraft 的 GitHub 主页
-	Join the ArtCraft Discord	加入 ArtCraft Discord 社区
+	Visit draftcraft.dev	访问 draftcraft.dev
+	DraftCraft on GitHub	DraftCraft 的 GitHub 主页
+	Join the DraftCraft Discord	加入 DraftCraft Discord 社区
 @plural	D.E.V. Launcher · {n} update available|D.E.V. Launcher · {n} updates available	D.E.V. Launcher · 有 {n} 个可用更新
 @plural	{n} app|{n} apps	{n} 个应用
-artcraft	AI image and video creation	AI 图像与视频创作
-photocraft	Image editing	图像编辑
-vectorcraft	Vector illustration	矢量插画
-filmcraft	Video editing, color and sound	视频剪辑、调色和声音处理
-lightcraft	Photo library and raw development	照片管理与 RAW 处理
-pdfcraft	Reading, organizing and protecting PDFs	PDF 阅读、整理和保护
-effectcraft	Motion graphics and visual effects	动态图形与视觉特效
-designcraft	Page layout and publishing	页面排版与出版
-wordcraft	Writing and document design	写作与文档设计
-deckcraft	Presentations and slide shows	演示文稿与幻灯片
-gridcraft	Spreadsheets and data	电子表格与数据处理
-craft-anything	Find out how any software works, then craft your own	了解任何软件的工作原理，然后打造你自己的版本
-solidcraft	Parametric 3D CAD	参数化三维 CAD
-mailcraft	Mail, calendar and contacts	邮件、日历和联系人
-cadcraft	Computer-aided design and drafting	计算机辅助设计与制图
-soundcraft	Recording, editing and mixing audio	音频录制、编辑与混音
-figcraft	Interface design and prototyping	界面设计与原型制作
 
 	Show in Files	在文件管理器中显示
 	Loading D.E.V. Launcher…	正在加载 D.E.V. Launcher…
@@ -396,31 +379,9 @@ column	Version	版本
 	Older launcher versions require a manual reinstall.	旧版启动器需要手动重新安装。
 	Your files may not open in older versions.	旧版可能无法打开你的文件。
 	Enable automatic installs in Settings to follow new nightly builds.	在设置中启用自动安装，即可跟进新的每日构建版。
-texturecraft	3D texture painting	3D 纹理绘制
-texturecraft	Paint materials on 3D models and export textures.	在 3D 模型上绘制材质并导出纹理。
-texturecraft	Materials	材质
-texturecraft	Mesh maps	网格贴图
-texturecraft	Bake mesh maps and use smart materials.	烘焙网格贴图并使用智能材质。
-texturecraft	Paint textures on 3D models.	在 3D 模型上绘制纹理。
 	Hide community apps	隐藏社区应用
-materialcraft	Procedural material design	程序化材质设计
-materialcraft	Build materials with node graphs.	使用节点图构建材质。
-materialcraft	Create tileable PBR materials and export texture maps.	创建可无缝平铺的 PBR 材质并导出纹理贴图。
-materialcraft	Node graphs	节点图
-materialcraft	Combine noises, patterns and filters.	组合噪声、图案和滤镜。
-materialcraft	Live previews	实时预览
-materialcraft	Preview materials in 2D and on 3D models.	在二维视图和三维模型上预览材质。
 	Advanced	高级
-	Migrate Flatpak bundles to ArtCraft OCI (experimental)	将 Flatpak 软件包迁移到 ArtCraft OCI（实验性）
-	On update, switch first party apps when the matching package is available. Otherwise, keep using bundles.	更新时，如果有对应的软件包，则迁移 ArtCraft 官方应用；否则继续使用独立软件包。
 	The OCI repository is a preview with GPG verification disabled.	OCI 仓库目前处于预览阶段，GPG 验证已禁用。
-anicraft	2D vector animation	二维矢量动画
-anicraft	Vector animation on a timeline you know.	在你熟悉的时间线上制作矢量动画。
-anicraft	Open-source 2D vector animation, built in pure Rust.	纯 Rust 构建的开源二维矢量动画。
-anicraft	Familiar by design	布局熟悉自然
-anicraft	Stage, tools, timeline, layers, keyframes, Properties and Library sit where animators expect them, with onion skinning for in-betweening.	舞台、工具、时间线、图层、关键帧、“属性”和“库”均位于动画师熟悉的直观位置，并配有洋葱皮功能。
-anicraft	Tweens that ease	流畅补间缓动
-anicraft	Classic tweens with eight easing presets and custom ease curves, plus shape tweens that morph one vector contour into another.	经典补间具备八种缓动预设与自定义曲线，外加将一种矢量轮廓变换为另一种的形状补间。
 	Version pinned to {version}. Click to unlock.	版本已固定为 {version}。点击解锁。
 	Unlock version?	解锁版本？
 	{app} is pinned to {version}. Follow the latest release instead?	{app} 已固定为 {version}。是否改为跟随最新版本？
@@ -445,3 +406,5 @@ anicraft	Classic tweens with eight easing presets and custom ease curves, plus s
 	Added	已添加
 	Remove	移除
 	Add	添加
+draftcraft	2D CAD and drafting	2D CAD 与制图
+tracedraw	Vector illustration and page layout	矢量插画与页面排版

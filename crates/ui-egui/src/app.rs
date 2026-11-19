@@ -488,9 +488,9 @@ impl LauncherUi {
 
     pub(crate) fn custom_install_folders(&self) -> bool {
         self.caps.manage_apps
-            && self.platform.is_some_and(|p| {
-                matches!(p.os, dev_launcher_core::Os::Windows | dev_launcher_core::Os::MacOs | dev_launcher_core::Os::Linux)
-            })
+            && self
+                .platform
+                .is_some_and(|p| matches!(p.os, dev_launcher_core::Os::Windows | dev_launcher_core::Os::MacOs | dev_launcher_core::Os::Linux))
             && !crate::settings::is_flatpak_sandbox()
     }
 

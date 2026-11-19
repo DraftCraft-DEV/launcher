@@ -50,13 +50,8 @@ impl LauncherUi {
         let size = sheet::size(ui.ctx(), vec2(1000.0, 820.0));
         ui.set_width(size.x);
         ui.set_max_height(size.y);
-        let hero_h = sheet::hero(
-            ui,
-            Some(crate::icons::dev_mark()),
-            tl!("Settings"),
-            &format!("D.E.V. Launcher {}", env!("CARGO_PKG_VERSION")),
-            |_| {},
-        );
+        let hero_h =
+            sheet::hero(ui, Some(crate::icons::dev_mark()), tl!("Settings"), &format!("D.E.V. Launcher {}", env!("CARGO_PKG_VERSION")), |_| {});
 
         let quit_width = widgets::button_width(ui, tl!("Quit D.E.V. Launcher"), 0.0);
         let done_width = widgets::button_width(ui, tl!("Done"), 90.0);
@@ -355,7 +350,7 @@ impl LauncherUi {
     fn settings_community(&mut self, ui: &mut Ui) {
         let t = Tokens::get(ui.ctx());
         sheet::panel(ui, tl!("Community"), |ui| {
-            ui.label(RichText::new(tl!("Questions, ideas and news from the ArtCraft team")).color(t.muted));
+            ui.label(RichText::new(tl!("Questions, ideas and news from the DraftCraft team")).color(t.muted));
             ui.add_space(6.0);
             ui.horizontal_wrapped(|ui| {
                 use dev_launcher_core::catalog::{GITHUB_URL, WEBSITE_URL};
@@ -387,5 +382,4 @@ impl LauncherUi {
         });
         self.settings.theme = theme_choice;
     }
-
 }

@@ -764,10 +764,7 @@ fn install_plan(
         Asking::Answer(system) => Some(system),
     };
     let (asset, kind) = planned_asset_on(app, &release, platform, options, (existing, record), system).ok_or_else(|| {
-        if platform.os == dev_launcher_core::Os::Linux
-            && options.install_locations.folder(app.id).is_some()
-            && existing.is_none()
-            && record.is_none()
+        if platform.os == dev_launcher_core::Os::Linux && options.install_locations.folder(app.id).is_some() && existing.is_none() && record.is_none()
         {
             "this release has no AppImage for a custom install folder".to_string()
         } else {
@@ -1251,8 +1248,6 @@ struct Fallback {
     github_every: i64,
 }
 
-
-
 /// The latest release of `app`, which service it came from, and the GitHub route used (for the
 /// rate-limit notice): the feed when it's trusted and vouches for the app, else GitHub if it's
 /// due, else GitHub's last answer. No release when there's nothing new to say.
@@ -1330,9 +1325,7 @@ fn local_mirror() -> Option<String> {
     let base = std::env::var("DEV_LAUNCHER_DOWNLOAD_BASE").ok()?;
     let base = base.trim();
     if !is_loopback(base) || base.contains(['?', '#', '\\']) {
-        log::warn!(
-            "ignoring DEV_LAUNCHER_DOWNLOAD_BASE={base}: only http://127.0.0.1:<port>/, http://localhost:<port>/ or http://[::1]:<port>/"
-        );
+        log::warn!("ignoring DEV_LAUNCHER_DOWNLOAD_BASE={base}: only http://127.0.0.1:<port>/, http://localhost:<port>/ or http://[::1]:<port>/");
         return None;
     }
     Some(if base.ends_with('/') { base.to_string() } else { format!("{base}/") })
@@ -2423,7 +2416,8 @@ mod tests {
         let Some(platform) = native_platform() else { return };
         let dir = tempfile::tempdir().unwrap();
         let mut backend = backend(dir.path(), platform, None);
-        let ids: Vec<&str> = dev_launcher_core::hosted_catalog::apps().iter().filter(|app| app.runs_on(platform.os)).map(|app| app.id).take(3).collect();
+        let ids: Vec<&str> =
+            dev_launcher_core::hosted_catalog::apps().iter().filter(|app| app.runs_on(platform.os)).map(|app| app.id).take(3).collect();
         assert_eq!(ids.len(), 3);
         type Held = Vec<Box<dyn FnOnce() + Send>>;
         let held: Arc<Mutex<Held>> = Arc::default();

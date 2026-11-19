@@ -282,7 +282,6 @@ pub fn install_at(
         )
         .map(|_| {
             if kind == PackageKind::Flatpak {
-                linux::configure_bundle_lookaside(app, existing.and_then(|installed| installed.installation.as_deref()));
                 linux::retire_former_flatpak(app, existing);
             }
             None
@@ -1409,35 +1408,12 @@ pub(crate) mod linux {
         }
     }
 
-    /// Configure signature verification for a bundle-created ArtCraft OCI origin.
-    pub fn configure_bundle_lookaside(app: &CraftApp, installation: Option<&str>) {
-        let scope = installation.map_or_else(|| "--user".to_string(), |name| crate::packages::flatpak_scope(Some(name)));
-        let id = app.bundle_id();
-        let Some(origin) = process::capture_flatpak(&["info", &scope, "--show-origin", &id], std::time::Duration::from_secs(10)) else { return };
-        let origin = origin.trim();
-        if !origin.ends_with("-origin") {
-            return;
-        }
-        let Some(remotes) =
-            process::capture_flatpak(&["remotes", &scope, "--show-disabled", "--columns=name,url"], std::time::Duration::from_secs(10))
-        else {
-            return;
-        };
-        if !crate::packages::is_artcraft_remote(origin, &remotes) {
-            return;
-        }
-        let lookaside = format!("--signature-lookaside={}", crate::packages::ARTCRAFT_SIGNATURE_LOOKASIDE);
-        if process::capture_flatpak(&["remote-modify", &scope, &lookaside, origin], std::time::Duration::from_secs(10)).is_none() {
-            log::warn!("Could not configure the Flatpak signature lookaside for {origin}");
-        }
-    }
-
     /// Updates an installed Flatpak from its remote repository (such as FlatPark).
     pub fn update_flatpak_app(
         app: &CraftApp,
         id: &str,
         installation: Option<&str>,
-        origin: Option<&str>,
+        _origin: Option<&str>,
         stop: &Stop,
         phase: &mut dyn FnMut(JobPhase),
     ) -> Result<(), String> {
@@ -1458,19 +1434,7 @@ pub(crate) mod linux {
             process::cancellable_output(cmd, || stop.check())
         };
         let update = ["update", &scope_arg, "-y", "--noninteractive", id];
-        let mut output = flatpak(&update)?;
-        // A signed bundle's origin can't carry the ArtCraft OCI signature lookaside, so its first
-        // update from the repository finds no signature: add the lookaside once and retry.
-        if !output.status.success()
-            && let Some(origin) = origin
-            && let Some(remotes) = process::capture_flatpak(&["remotes", &scope_arg, "--columns=name,url"], std::time::Duration::from_secs(10))
-            && crate::packages::needs_signature_lookaside(&String::from_utf8_lossy(&output.stderr), origin, &remotes)
-        {
-            let lookaside = format!("--signature-lookaside={}", crate::packages::ARTCRAFT_SIGNATURE_LOOKASIDE);
-            if flatpak(&["remote-modify", &scope_arg, &lookaside, origin])?.status.success() {
-                output = flatpak(&update)?;
-            }
-        }
+        let output = flatpak(&update)?;
         if output.status.success() {
             return Ok(());
         }

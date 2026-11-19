@@ -102,7 +102,7 @@
 	Show the window on the current desktop	Zobrazit okno na aktuální ploše
 	Start D.E.V. Launcher when I log in	Spouštět D.E.V. Launcher po přihlášení
 	Community	Komunita
-	Questions, ideas and news from the ArtCraft team	Dotazy, nápady a novinky od týmu ArtCraft
+	Questions, ideas and news from the DraftCraft team	Dotazy, nápady a novinky od týmu DraftCraft
 	Appearance	Vzhled
 	Quit D.E.V. Launcher	Ukončit D.E.V. Launcher
 	Done	Hotovo
@@ -170,23 +170,6 @@
 	Arch package (.pkg.tar.zst)	Balíček Arch (.pkg.tar.zst)
 	Flatpak bundle	Balíček Flatpak
 	Tarball (.tar.gz)	Archiv tar (.tar.gz)
-artcraft	AI image and video creation	Tvorba obrázků a videí pomocí AI
-photocraft	Image editing	Úpravy obrázků
-vectorcraft	Vector illustration	Vektorová ilustrace
-filmcraft	Video editing, color and sound	Střih videa, barvy a zvuk
-lightcraft	Photo library and raw development	Katalog fotografií a vyvolávání RAW
-pdfcraft	Reading, organizing and protecting PDFs	Čtení, organizace a ochrana souborů PDF
-effectcraft	Motion graphics and visual effects	Pohyblivá grafika a vizuální efekty
-designcraft	Page layout and publishing	Sazba stránek a publikování
-wordcraft	Writing and document design	Psaní a návrh dokumentů
-deckcraft	Presentations and slide shows	Prezentace a promítání snímků
-gridcraft	Spreadsheets and data	Tabulky a data
-craft-anything	Find out how any software works, then craft your own	Zjistěte, jak funguje jakýkoli software, a vytvořte si vlastní
-solidcraft	Parametric 3D CAD	Parametrické 3D CAD
-mailcraft	Mail, calendar and contacts	Pošta, kalendář a kontakty
-cadcraft	Computer-aided design and drafting	Počítačem podporované navrhování a kreslení
-soundcraft	Recording, editing and mixing audio	Nahrávání, úpravy a mixování zvuku
-figcraft	Interface design and prototyping	Návrh rozhraní a prototypování
 month	Jan	1.
 month	Feb	2.
 month	Mar	3.
@@ -205,8 +188,8 @@ month	Dec	12.
 	Installing for {platform}	Instalace pro {platform}
 	Downloads for {platform}	Stažení pro {platform}
 	No downloads for this system	Pro tento systém nejsou k dispozici žádné soubory ke stažení
-	Join the ArtCraft community on Discord	Připojit se ke komunitě ArtCraft na Discordu
-	ArtCraft on {name}	ArtCraft na {name}
+	Join the DraftCraft community on Discord	Připojit se ke komunitě DraftCraft na Discordu
+	DraftCraft on {name}	DraftCraft na {name}
 	Couldn't open {name}: {e}	{name} nelze otevřít: {e}
 	Download cancelled	Stahování zrušeno
 	Available to install	K dispozici k instalaci
@@ -248,7 +231,7 @@ month	Dec	12.
 	Couldn't check for updates: {f}	Aktualizace nelze zkontrolovat: {f}
 	Website (coming soon)	Web (již brzy)
 	GitHub repository	Repozitář na GitHubu
-	ArtCraft	ArtCraft
+	DraftCraft	DraftCraft
 	Update 1 app	Aktualizovat 1 aplikaci
 	Update all ({count})	Aktualizovat vše ({count})
 	⊞  Grid	⊞  Mřížka
@@ -348,9 +331,9 @@ filter	Installed	Nainstalováno
 @id	appearance.theme	Vzhled
 	Show D.E.V. Launcher	Zobrazit D.E.V. Launcher
 	Check for Updates	Zkontrolovat aktualizace
-	Visit getartcraft.com	Navštívit getartcraft.com
-	ArtCraft on GitHub	ArtCraft na GitHubu
-	Join the ArtCraft Discord	Připojit se na ArtCraft Discord
+	Visit draftcraft.dev	Navštívit draftcraft.dev
+	DraftCraft on GitHub	DraftCraft na GitHubu
+	Join the DraftCraft Discord	Připojit se na DraftCraft Discord
 @plural	D.E.V. Launcher · {n} update available|D.E.V. Launcher · {n} updates available	D.E.V. Launcher · {n} dostupná aktualizace|D.E.V. Launcher · {n} dostupné aktualizace|D.E.V. Launcher · {n} dostupných aktualizací
 
 	Download size: {size}	Velikost ke stažení: {size}
@@ -396,31 +379,9 @@ column	Author	Autor
 	Older launcher versions require a manual reinstall.	Starší verze spouštěče vyžadují ruční přeinstalaci.
 	Your files may not open in older versions.	Starší verze nemusí vaše soubory otevřít.
 	Enable automatic installs in Settings to follow new nightly builds.	Chcete-li automaticky dostávat nová noční sestavení, zapněte v nastavení automatické instalace.
-texturecraft	3D texture painting	Malování textur ve 3D
-texturecraft	Paint materials on 3D models and export textures.	Malujte materiály na 3D modely a exportujte textury.
-texturecraft	Materials	Materiály
-texturecraft	Mesh maps	Mapy sítí
-texturecraft	Bake mesh maps and use smart materials.	Vypékejte mapy sítí a používejte inteligentní materiály.
-texturecraft	Paint textures on 3D models.	Malujte textury na 3D modely.
 	Hide community apps	Skrýt komunitní aplikace
-materialcraft	Procedural material design	Návrh procedurálních materiálů
-materialcraft	Build materials with node graphs.	Vytvářejte materiály pomocí uzlových grafů.
-materialcraft	Create tileable PBR materials and export texture maps.	Vytvářejte bezešvé PBR materiály a exportujte texturové mapy.
-materialcraft	Node graphs	Uzlové grafy
-materialcraft	Combine noises, patterns and filters.	Kombinujte šumy, vzory a filtry.
-materialcraft	Live previews	Živé náhledy
-materialcraft	Preview materials in 2D and on 3D models.	Prohlížejte materiály ve 2D a na 3D modelech.
 	Advanced	Pokročilé
-	Migrate Flatpak bundles to ArtCraft OCI (experimental)	Převést balíčky Flatpak na ArtCraft OCI (experimentální)
-	On update, switch first party apps when the matching package is available. Otherwise, keep using bundles.	Při aktualizaci převést aplikace ArtCraft, pokud je dostupný odpovídající balíček. Jinak nadále používat samostatné balíčky.
 	The OCI repository is a preview with GPG verification disabled.	Repozitář OCI je předběžná verze s vypnutým ověřováním GPG.
-anicraft	2D vector animation	2D vektorová animace
-anicraft	Vector animation on a timeline you know.	Vektorová animace na známé časové ose.
-anicraft	Open-source 2D vector animation, built in pure Rust.	Open-source 2D vektorová animace vytvořená v čistém Rustu.
-anicraft	Familiar by design	Navrženo tak, jak jste zvyklí
-anicraft	Stage, tools, timeline, layers, keyframes, Properties and Library sit where animators expect them, with onion skinning for in-betweening.	Scéna, nástroje, časová osa, vrstvy, klíčové snímky, Vlastnosti i Knihovna jsou tam, kde je animátoři čekají, včetně cibulového pauzáku.
-anicraft	Tweens that ease	Plynulé mezilehlé pohyby (tweens)
-anicraft	Classic tweens with eight easing presets and custom ease curves, plus shape tweens that morph one vector contour into another.	Klasické mezilehlé pohyby s osmi předvolbami zpomalení a vlastními křivkami, plus tvarové mezilehlé pohyby pro morphing.
 	Version pinned to {version}. Click to unlock.	Verze je uzamčena na {version}. Kliknutím ji odemknete.
 	Unlock version?	Odemknout verzi?
 	{app} is pinned to {version}. Follow the latest release instead?	Aplikace {app} je uzamčena na verzi {version}. Přejít na nejnovější vydání?
@@ -445,3 +406,5 @@ anicraft	Classic tweens with eight easing presets and custom ease curves, plus s
 	Added	Přidáno
 	Remove	Odebrat
 	Add	Přidat
+draftcraft	2D CAD and drafting	2D CAD a technické kreslení
+tracedraw	Vector illustration and page layout	Vektorová ilustrace a sazba stránek

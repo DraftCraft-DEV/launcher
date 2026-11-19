@@ -306,66 +306,9 @@ mod tests {
     }
 }
 
-/// Matches the OCI URL from https://getartcraft.com/artcraft-oci.flatpakrepo,
-/// independently of its local remote name (normally `artcraft-oci`).
-pub fn is_artcraft_remote(origin: &str, remotes: &str) -> bool {
-    remotes.lines().any(|line| {
-        let Some((name, url)) = line.split_once('\t') else { return false };
-        let url = url.trim().trim_end_matches('/');
-        name.trim() == origin && url == "oci+https://getartcraft.com"
-    })
-}
-
-/// Where Flatpak finds the ArtCraft OCI images' signatures (artcraft-oci.flatpakrepo's
-/// `SignatureLookaside`), redirected to each release's `.oci.sig` asset.
-pub const ARTCRAFT_SIGNATURE_LOOKASIDE: &str = "https://getartcraft.com/signatures";
-
-/// Did an update fail only because `origin`, an ArtCraft OCI remote, has no signature lookaside
-/// (a signed bundle's origin, which `flatpak build-bundle` can't give one)?
-pub fn needs_signature_lookaside(stderr: &str, origin: &str, remotes: &str) -> bool {
-    stderr.contains(&format!("{origin}: no valid signatures for ")) && is_artcraft_remote(origin, remotes)
-}
-
-#[cfg(test)]
-mod remote_url_tests {
-    use super::*;
-    #[test]
-    fn recognizes_custom_names_and_rejects_unrelated_urls() {
-        assert!(is_artcraft_remote("artcraft-oci", "artcraft-oci\toci+https://getartcraft.com\n"));
-        assert!(is_artcraft_remote("custom", "custom\toci+https://getartcraft.com/\n"));
-        for url in [
-            "oci+https://getartcraft.com.evil",
-            "oci+https://getartcraft.com/other",
-            "oci+http://getartcraft.com",
-            "https://getartcraft.com/linux",
-            "https://getartcraft.com/artcraft-oci.flatpakrepo",
-            "https://getartcraft.com",
-        ] {
-            assert!(!is_artcraft_remote("custom", &format!("custom\t{url}")));
-        }
-        assert!(!is_artcraft_remote("other", "custom\toci+https://getartcraft.com"));
-    }
-
-    #[test]
-    fn only_an_artcraft_origin_missing_its_signatures_gets_the_lookaside() {
-        // Flatpak 1.18's error for a verified OCI remote with no lookaside.
-        let stderr = "error: Failed to update ai.storyteller.photocraft: photocraft-origin: no valid signatures for \
-                      ghcr.io/storytold/photocraft@sha256:968d75c9d16d5f7d089775f14a3b418d72a4c70d86986811ee2dd818da956b92";
-        let remotes = "photocraft-origin\toci+https://getartcraft.com\nflathub\thttps://dl.flathub.org/repo/\n";
-        assert!(needs_signature_lookaside(stderr, "photocraft-origin", remotes));
-        // Another remote, another origin's failure, or another error: leave the remote alone.
-        assert!(!needs_signature_lookaside(stderr, "photocraft-origin", "photocraft-origin\thttps://example.org\n"));
-        assert!(!needs_signature_lookaside(stderr, "flathub", remotes));
-        assert!(!needs_signature_lookaside("error: Server returned status 404", "photocraft-origin", remotes));
-    }
-}
-
-/// A bundle origin permits replacement when its URL is empty or points at ArtCraft OCI.
+/// A bundle origin permits replacement when its URL is empty.
 /// Missing rows are unknown, so preserve remote ownership conservatively.
 pub fn remote_manages_flatpak(origin: &str, remotes: &str) -> bool {
-    if origin.ends_with("-origin") && is_artcraft_remote(origin, remotes) {
-        return false;
-    }
     remotes
         .lines()
         .find_map(|line| {
@@ -385,8 +328,7 @@ mod remote_ownership_tests {
     fn only_confirmed_empty_urls_allow_bundle_replacement() {
         assert!(!remote_manages_flatpak("app-origin", "app-origin\t\n"));
         assert!(remote_manages_flatpak("renamed", "renamed\thttps://example.org/repo\n"));
-        assert!(remote_manages_flatpak("renamed", "renamed\toci+https://getartcraft.com\n"));
-        assert!(!remote_manages_flatpak("app-origin", "app-origin\toci+https://getartcraft.com\n"));
+        assert!(remote_manages_flatpak("app-origin", "app-origin\toci+https://example.org\n"));
         assert!(remote_manages_flatpak("missing", "other\t\n"));
         assert!(!remote_manages_flatpak("app-origin", "app-origin"));
     }

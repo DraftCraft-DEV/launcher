@@ -530,7 +530,8 @@ mod tests {
         let FeedAnswer::Fresh(Some(r)) = feed.answer(app("draftcraft"), NOW) else { panic!() };
         assert!(r.assets[0].url.starts_with("https://github.com/DraftCraft-DEV/DraftCraft-app/releases/download/"));
         // The same entry without the rename: the repo doesn't match, so GitHub decides.
-        let unannounced = moved.replace(r#"{"old_name": "draftcraft-dev/DraftCraft", "new_name": "DraftCraft-DEV/DraftCraft-app", "renamed_at": null}"#, "");
+        let unannounced =
+            moved.replace(r#"{"old_name": "draftcraft-dev/DraftCraft", "new_name": "DraftCraft-DEV/DraftCraft-app", "renamed_at": null}"#, "");
         let feed = Feed::parse(&unannounced).unwrap();
         assert_eq!(feed.answer(app("draftcraft"), NOW), FeedAnswer::AskGitHub);
     }
@@ -576,7 +577,8 @@ mod tests {
     #[test]
     fn a_local_mirror_is_trusted_only_when_asked_for_and_never_goes_stale() {
         const MIRROR: &str = "http://127.0.0.1:8787/";
-        let local = sample().replace("https://github.com/DraftCraft-DEV/DraftCraft/releases/download/v0.6.0/", "http://127.0.0.1:8787/photocraft/v0.6.0/");
+        let local =
+            sample().replace("https://github.com/DraftCraft-DEV/DraftCraft/releases/download/v0.6.0/", "http://127.0.0.1:8787/photocraft/v0.6.0/");
         // Without the mirror, the local link is dropped like any other stranger's.
         let FeedAnswer::Fresh(Some(r)) = Feed::parse(&local).unwrap().answer(app("draftcraft"), NOW) else { panic!() };
         assert!(r.assets.is_empty());

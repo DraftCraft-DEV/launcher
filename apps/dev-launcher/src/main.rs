@@ -107,9 +107,7 @@ fn main() -> ExitCode {
     }
     // A moved or reinstalled launcher would otherwise leave the login entry pointing at the old path.
     login::refresh();
-    if let Some(error) =
-        dev_launcher_native::paths::Paths::new().ok().and_then(|paths| dev_launcher_native::self_update::take_failure(&paths))
-    {
+    if let Some(error) = dev_launcher_native::paths::Paths::new().ok().and_then(|paths| dev_launcher_native::self_update::take_failure(&paths)) {
         log::warn!("the last self-update didn't install: {error}");
     }
     let (tray_loop, woken) = sync_channel(1);
@@ -188,8 +186,7 @@ fn main() -> ExitCode {
 /// in charge, and wgpu limits are clamped to the adapter so a short adapter cannot fail device
 /// creation.
 fn native_options(hidden: bool, backends: Option<eframe::wgpu::Backends>) -> eframe::NativeOptions {
-    let icon =
-        eframe::icon_data::from_png_bytes(include_bytes!("../../../assets/app-icon/hicolor/256x256/apps/dev.draftcraft.Launcher.png")).ok();
+    let icon = eframe::icon_data::from_png_bytes(include_bytes!("../../../assets/app-icon/hicolor/256x256/apps/dev.draftcraft.Launcher.png")).ok();
     let mut viewport = egui::ViewportBuilder::default()
         .with_title("D.E.V. Launcher")
         .with_app_id(APP_ID)

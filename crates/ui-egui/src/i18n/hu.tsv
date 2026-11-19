@@ -115,7 +115,7 @@
 	Show the window on the current desktop	Ablak megjelenítése az aktuális asztalon
 	Start D.E.V. Launcher when I log in	D.E.V. Launcher indítása bejelentkezéskor
 	Community	Közösség
-	Questions, ideas and news from the ArtCraft team	Kérdések, ötletek és hírek az ArtCraft csapatától
+	Questions, ideas and news from the DraftCraft team	Kérdések, ötletek és hírek az DraftCraft csapatától
 	Appearance	Megjelenés
 	Quit D.E.V. Launcher	Kilépés az D.E.V. Launcherből
 	Done	Kész
@@ -188,23 +188,6 @@
 	Tarball (.tar.gz)	Tömörített archívum (.tar.gz)
 
 # Contextual: each app's tagline, keyed by app id
-artcraft	AI image and video creation	Képek és videók készítése MI-vel
-photocraft	Image editing	Képszerkesztés
-vectorcraft	Vector illustration	Vektoros illusztráció
-filmcraft	Video editing, color and sound	Videószerkesztés, színkorrekció és hang
-lightcraft	Photo library and raw development	Fotók rendszerezése és RAW-előhívás
-pdfcraft	Reading, organizing and protecting PDFs	PDF-ek olvasása, rendezése és védelme
-effectcraft	Motion graphics and visual effects	Mozgógrafika és vizuális effektek
-designcraft	Page layout and publishing	Oldaltervezés és kiadványszerkesztés
-wordcraft	Writing and document design	Írás és dokumentumtervezés
-deckcraft	Presentations and slide shows	Prezentációk és diavetítések
-gridcraft	Spreadsheets and data	Táblázatok és adatok
-craft-anything	Find out how any software works, then craft your own	Ismerd meg, hogyan működik bármely szoftver, majd készítsd el a sajátodat
-solidcraft	Parametric 3D CAD	Paraméteres 3D CAD
-mailcraft	Mail, calendar and contacts	Levelezés, naptár és névjegyek
-cadcraft	Computer-aided design and drafting	Számítógépes tervezés és műszaki rajz
-soundcraft	Recording, editing and mixing audio	Hangrögzítés, hangszerkesztés és keverés
-figcraft	Interface design and prototyping	Felülettervezés és prototípus-készítés
 
 # Contextual: month abbreviations for date rendering
 month	Jan	jan.
@@ -225,8 +208,8 @@ month	Dec	dec.
 	Installing for {platform}	Telepítés {platform} rendszerre
 	Downloads for {platform}	Letöltések {platform} rendszerre
 	No downloads for this system	Nincsenek letöltések ehhez a rendszerhez
-	Join the ArtCraft community on Discord	Csatlakozz az ArtCraft közösségéhez a Discordon
-	ArtCraft on {name}	ArtCraft – {name}
+	Join the DraftCraft community on Discord	Csatlakozz az DraftCraft közösségéhez a Discordon
+	DraftCraft on {name}	DraftCraft – {name}
 	Couldn't open {name}: {e}	{name} nem nyitható meg: {e}
 	Download cancelled	Letöltés megszakítva
 	Available to install	Telepíthető
@@ -268,7 +251,7 @@ month	Dec	dec.
 	Couldn't check for updates: {f}	Nem sikerült frissítéseket keresni: {f}
 	Website (coming soon)	Webhely (hamarosan)
 	GitHub repository	GitHub-tároló
-	ArtCraft	ArtCraft
+	DraftCraft	DraftCraft
 	Update 1 app	1 alkalmazás frissítése
 	Update all ({count})	Összes frissítése ({count})
 	⊞  Grid	⊞  Rács
@@ -381,9 +364,9 @@ filter	Installed	Telepítve
 # Tray (menu bar) menu and tooltip
 	Show D.E.V. Launcher	D.E.V. Launcher megjelenítése
 	Check for Updates	Frissítések keresése
-	Visit getartcraft.com	getartcraft.com megnyitása
-	ArtCraft on GitHub	ArtCraft a GitHubon
-	Join the ArtCraft Discord	Csatlakozás az ArtCraft Discord-közösségéhez
+	Visit draftcraft.dev	draftcraft.dev megnyitása
+	DraftCraft on GitHub	DraftCraft a GitHubon
+	Join the DraftCraft Discord	Csatlakozás az DraftCraft Discord-közösségéhez
 @plural	D.E.V. Launcher · {n} update available|D.E.V. Launcher · {n} updates available	D.E.V. Launcher · {n} frissítés elérhető|D.E.V. Launcher · {n} frissítés elérhető
 
 	Download size: {size}	Letöltési méret: {size}
@@ -429,31 +412,9 @@ column	Author	Szerző
 	Older launcher versions require a manual reinstall.	Az indító régebbi verzióit kézzel kell újratelepíteni.
 	Your files may not open in older versions.	Előfordulhat, hogy a régebbi verziók nem tudják megnyitni a fájljaidat.
 	Enable automatic installs in Settings to follow new nightly builds.	Az új éjszakai kiadások követéséhez kapcsold be az automatikus telepítést a beállításokban.
-texturecraft	3D texture painting	3D textúrafestés
-texturecraft	Paint materials on 3D models and export textures.	Fess anyagokat 3D modellekre, és exportáld a textúrákat.
-texturecraft	Materials	Anyagok
-texturecraft	Mesh maps	Hálótérképek
-texturecraft	Bake mesh maps and use smart materials.	Süss ki hálótérképeket, és használj intelligens anyagokat.
-texturecraft	Paint textures on 3D models.	Fess textúrákat 3D modellekre.
 	Hide community apps	Közösségi alkalmazások elrejtése
-materialcraft	Procedural material design	Procedurális anyagtervezés
-materialcraft	Build materials with node graphs.	Készíts anyagokat csomópontgráfokkal.
-materialcraft	Create tileable PBR materials and export texture maps.	Készíts hézagmentesen ismételhető PBR-anyagokat, és exportálj textúratérképeket.
-materialcraft	Node graphs	Csomópontgráfok
-materialcraft	Combine noises, patterns and filters.	Kombinálj zajokat, mintákat és szűrőket.
-materialcraft	Live previews	Élő előnézetek
-materialcraft	Preview materials in 2D and on 3D models.	Tekintsd meg az anyagokat 2D-ben és 3D modelleken.
 	Advanced	Haladó
-	Migrate Flatpak bundles to ArtCraft OCI (experimental)	Flatpak-csomagok átállítása ArtCraft OCI-ra (kísérleti)
-	On update, switch first party apps when the matching package is available. Otherwise, keep using bundles.	Frissítéskor állítsa át az ArtCraft alkalmazásait, ha elérhető a megfelelő csomag. Egyébként továbbra is önálló csomagokat használjon.
 	The OCI repository is a preview with GPG verification disabled.	Az OCI-tároló előzetes verzió, kikapcsolt GPG-ellenőrzéssel.
-anicraft	2D vector animation	2D vektoros animáció
-anicraft	Vector animation on a timeline you know.	Vektoranimáció egy ismerős idővonalon.
-anicraft	Open-source 2D vector animation, built in pure Rust.	Nyílt forráskódú 2D vektoranimáció, tiszta Rustban írva.
-anicraft	Familiar by design	Ismerős kialakítás
-anicraft	Stage, tools, timeline, layers, keyframes, Properties and Library sit where animators expect them, with onion skinning for in-betweening.	Színpad, eszközök, idővonal, rétegek, kulcsképkockák, Tulajdonságok és Könyvtár a megszokott helyen, hagymabőr funkcióval.
-anicraft	Tweens that ease	Finom mozgásinterpolációk
-anicraft	Classic tweens with eight easing presets and custom ease curves, plus shape tweens that morph one vector contour into another.	Klasszikus mozgásinterpolációk nyolc görbe-előbeállítással és egyéni görbékkel, valamint alakos interpolációk.
 	Version pinned to {version}. Click to unlock.	A verzió rögzítve: {version}. Kattintson a feloldáshoz.
 	Unlock version?	Feloldja a verzió zárolását?
 	{app} is pinned to {version}. Follow the latest release instead?	A(z) {app} a(z) {version} verzióra van rögzítve. Inkább a legújabb kiadást kövesse?
@@ -478,3 +439,5 @@ anicraft	Classic tweens with eight easing presets and custom ease curves, plus s
 	Added	Hozzáadva
 	Remove	Eltávolítás
 	Add	Hozzáadás
+draftcraft	2D CAD and drafting	2D CAD és műszaki rajz
+tracedraw	Vector illustration and page layout	Vektoros illusztráció és kiadványszerkesztés

@@ -111,7 +111,7 @@
 	Show the window on the current desktop	ფანჯრის ჩვენება მიმდინარე სამუშაო მაგიდაზე
 	Start D.E.V. Launcher when I log in	D.E.V. Launcher-ის გაშვება სისტემაში შესვლისას
 	Community	საზოგადოება
-	Questions, ideas and news from the ArtCraft team	კითხვები, იდეები და სიახლეები ArtCraft-ის გუნდისგან
+	Questions, ideas and news from the DraftCraft team	კითხვები, იდეები და სიახლეები DraftCraft-ის გუნდისგან
 	Appearance	იერსახე
 	Quit D.E.V. Launcher	D.E.V. Launcher-იდან გასვლა
 	Done	მზადაა
@@ -192,23 +192,6 @@
 	Tarball (.tar.gz)	tar-არქივი (.tar.gz)
 
 # Contextual: each app's tagline, keyed by app id
-artcraft	AI image and video creation	სურათებისა და ვიდეოების შექმნა ხელოვნური ინტელექტით
-photocraft	Image editing	გამოსახულებების რედაქტირება
-vectorcraft	Vector illustration	ვექტორული ილუსტრაცია
-filmcraft	Video editing, color and sound	ვიდეოს მონტაჟი, ფერი და ხმა
-lightcraft	Photo library and raw development	ფოტოთეკა და RAW-ის დამუშავება
-pdfcraft	Reading, organizing and protecting PDFs	PDF-ების კითხვა, ორგანიზება და დაცვა
-effectcraft	Motion graphics and visual effects	მოძრავი გრაფიკა და ეფექტები
-designcraft	Page layout and publishing	გვერდების მაკეტირება და გამოცემა
-wordcraft	Writing and document design	წერა და დოკუმენტების დიზაინი
-deckcraft	Presentations and slide shows	პრეზენტაციები და სლაიდშოუები
-gridcraft	Spreadsheets and data	ელცხრილები და მონაცემები
-craft-anything	Find out how any software works, then craft your own	გაიგეთ, როგორ მუშაობს ნებისმიერი პროგრამა, და შექმენით საკუთარი
-cadcraft	Computer-aided design and drafting	დაპროექტება და ნახაზები
-soundcraft	Recording, editing and mixing audio	აუდიოს ჩაწერა, რედაქტირება და მიქსირება
-figcraft	Interface design and prototyping	ინტერფეისის დიზაინი და პროტოტიპირება
-solidcraft	Parametric 3D CAD	პარამეტრული 3D დაპროექტება
-mailcraft	Mail, calendar and contacts	ფოსტა, კალენდარი და კონტაქტები
 
 # Contextual: month abbreviations for date rendering
 month	Jan	იან
@@ -229,8 +212,8 @@ month	Dec	დეკ
 	Installing for {platform}	ინსტალაცია პლატფორმისთვის: {platform}
 	Downloads for {platform}	ჩამოტვირთვები პლატფორმისთვის: {platform}
 	No downloads for this system	ამ სისტემისთვის ჩამოსატვირთი არაფერია
-	Join the ArtCraft community on Discord	შემოუერთდით ArtCraft-ის საზოგადოებას Discord-ზე
-	ArtCraft on {name}	ArtCraft {name}-ზე
+	Join the DraftCraft community on Discord	შემოუერთდით DraftCraft-ის საზოგადოებას Discord-ზე
+	DraftCraft on {name}	DraftCraft {name}-ზე
 	Couldn't open {name}: {e}	{name} ვერ გაიხსნა: {e}
 	Download cancelled	ჩამოტვირთვა გაუქმდა
 	Available to install	ხელმისაწვდომია
@@ -271,7 +254,7 @@ month	Dec	დეკ
 	Downloads the new version, replaces this one and opens it again	ჩამოტვირთავს ახალ ვერსიას, ჩაანაცვლებს ამას და ხელახლა გახსნის
 	Couldn't check for updates: {f}	განახლებების შემოწმება ვერ მოხერხდა: {f}
 	GitHub repository	GitHub-ის რეპოზიტორია
-	ArtCraft	ArtCraft
+	DraftCraft	DraftCraft
 	Update 1 app	1 აპლიკაციის განახლება
 	Update all ({count})	ყველას განახლება ({count})
 	⊞  Grid	⊞  ბადე
@@ -384,9 +367,9 @@ filter	Installed	დაინსტალირებული
 # Tray (menu bar) menu and tooltip
 	Show D.E.V. Launcher	D.E.V. Launcher-ის ჩვენება
 	Check for Updates	განახლებების შემოწმება
-	Visit getartcraft.com	getartcraft.com-ის გახსნა
-	ArtCraft on GitHub	ArtCraft GitHub-ზე
-	Join the ArtCraft Discord	შემოუერთდით ArtCraft-ის Discord-ს
+	Visit draftcraft.dev	draftcraft.dev-ის გახსნა
+	DraftCraft on GitHub	DraftCraft GitHub-ზე
+	Join the DraftCraft Discord	შემოუერთდით DraftCraft-ის Discord-ს
 @plural	D.E.V. Launcher · {n} update available|D.E.V. Launcher · {n} updates available	D.E.V. Launcher · ხელმისაწვდომია {n} განახლება|D.E.V. Launcher · ხელმისაწვდომია {n} განახლება
 	Install folder	ინსტალაციის საქაღალდე
 	Default install folder	ნაგულისხმევი ინსტალაციის საქაღალდე
@@ -430,28 +413,8 @@ column	Author	ავტორი
 	Older launcher versions require a manual reinstall.	Launcher-ის ძველ ვერსიებს ხელით ხელახალი ინსტალაცია სჭირდება.
 	Your files may not open in older versions.	თქვენი ფაილები შეიძლება ძველ ვერსიებში არ გაიხსნას.
 	Enable automatic installs in Settings to follow new nightly builds.	ახალი ღამის ვერსიების მისაღებად პარამეტრებში ჩართეთ ავტომატური ინსტალაცია.
-texturecraft	3D texture painting	3D ტექსტურების ხატვა
-texturecraft	Paint materials on 3D models and export textures.	3D მოდელებზე მასალებით ხატვა და ტექსტურების ექსპორტი.
-texturecraft	Materials	მასალები
-texturecraft	Mesh maps	ბადის რუკები
-texturecraft	Bake mesh maps and use smart materials.	ბადის რუკების გამოცხობა და ჭკვიანი მასალების გამოყენება.
-texturecraft	Paint textures on 3D models.	3D მოდელებზე ტექსტურების ხატვა.
 	Hide community apps	საზოგადოების აპლიკაციების დამალვა
-materialcraft	Procedural material design	პროცედურული მასალების დიზაინი
-materialcraft	Build materials with node graphs.	მასალების აწყობა კვანძების გრაფებით.
-materialcraft	Create tileable PBR materials and export texture maps.	უნაკერო PBR მასალების შექმნა და ტექსტურების რუკების ექსპორტი.
-materialcraft	Node graphs	კვანძების გრაფები
-materialcraft	Combine noises, patterns and filters.	ხმაურების, პატერნებისა და ფილტრების კომბინირება.
-materialcraft	Live previews	ცოცხალი წინასწარი ნახვა
-materialcraft	Preview materials in 2D and on 3D models.	მასალების წინასწარი ნახვა 2D-ში და 3D მოდელებზე.
 	Download size: {size}	ჩამოტვირთვის ზომა: {size}
-anicraft	2D vector animation	2D ვექტორული ანიმაცია
-anicraft	Vector animation on a timeline you know.	ვექტორული ანიმაცია ნაცნობ ქრონოლოგიაზე.
-anicraft	Open-source 2D vector animation, built in pure Rust.	ღია კოდის 2D ვექტორული ანიმაცია, შექმნილი სუფთა Rust-ში.
-anicraft	Familiar by design	ნაცნობი დიზაინი
-anicraft	Stage, tools, timeline, layers, keyframes, Properties and Library sit where animators expect them, with onion skinning for in-betweening.	სცენა, ხელსაწყოები, დროის ხაზი, ფენები, საკვანძო კადრები, თვისებები და ბიბლიოთეკა იქ, სადაც ანიმატორები ელიან.
-anicraft	Tweens that ease	გლუვი ანიმაცია
-anicraft	Classic tweens with eight easing presets and custom ease curves, plus shape tweens that morph one vector contour into another.	კლასიკური ანიმაციური გადასვლები რვა წინასწარ დაყენებული პარამეტრით და ფორმის გარდაქმნით.
 	Version pinned to {version}. Click to unlock.	ვერსია ფიქსირებულია {version}-ზე. განსაბლოკად დააწკაპუნეთ.
 	Unlock version?	განიბლოკოს ვერსია?
 	{app} is pinned to {version}. Follow the latest release instead?	{app} ფიქსირებულია {version} ვერსიაზე. სანაცვლოდ გამოიყენოთ უახლესი გამოშვება?
@@ -476,3 +439,5 @@ anicraft	Classic tweens with eight easing presets and custom ease curves, plus s
 	Added	დამატებულია
 	Remove	წაშლა
 	Add	დამატება
+draftcraft	2D CAD and drafting	2D CAD და ტექნიკური ხაზვა
+tracedraw	Vector illustration and page layout	ვექტორული ილუსტრაცია და გვერდების განლაგება

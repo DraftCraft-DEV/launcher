@@ -303,7 +303,6 @@ pub enum Event {
         /// GitHub refused more API calls until this time (Unix seconds).
         rate_limited_until: Option<i64>,
     },
-
 }
 
 /// What a backend can do on this platform.

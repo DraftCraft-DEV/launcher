@@ -463,14 +463,14 @@ impl LauncherUi {
             widgets::IconLink {
                 name: "Discord",
                 label: tl!("Discord").to_string(),
-                tip: tl!("Join the ArtCraft community on Discord").to_string(),
+                tip: tl!("Join the DraftCraft community on Discord").to_string(),
                 url: self.discord_url,
             },
         ];
         links.extend(SOCIAL.iter().map(|(name, url)| widgets::IconLink {
             name,
             label: (*name).to_string(),
-            tip: fmt(tl!("ArtCraft on {name}"), &[("name", name)]),
+            tip: fmt(tl!("DraftCraft on {name}"), &[("name", name)]),
             url,
         }));
         let icon = 13.0;

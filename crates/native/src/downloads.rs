@@ -9,7 +9,6 @@
 use std::sync::{Condvar, Mutex, MutexGuard, PoisonError};
 use std::time::Duration;
 
-
 struct Waiting {
     id: u64,
     app: String,
@@ -282,7 +281,10 @@ mod tests {
     fn with_no_limit_every_download_runs_at_once() {
         let queue = Downloads::new();
         queue.set_limit(0);
-        let turns: Vec<_> = dev_launcher_core::hosted_catalog::apps().iter().map(|app| queue.turn(app.id, &GO, &mut || panic!("{} should not wait", app.id)).unwrap()).collect();
+        let turns: Vec<_> = dev_launcher_core::hosted_catalog::apps()
+            .iter()
+            .map(|app| queue.turn(app.id, &GO, &mut || panic!("{} should not wait", app.id)).unwrap())
+            .collect();
         assert_eq!(queue.lock().running, dev_launcher_core::hosted_catalog::apps().len());
         drop(turns);
     }

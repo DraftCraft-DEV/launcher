@@ -181,11 +181,8 @@ mod tests {
     fn the_update_checks_links_against_the_repo_the_release_came_from() {
         let app = &craft_update::suite::LAUNCHER;
         let sums = |name: &str| [("a".repeat(64), name.to_string())];
-        let renamed = dev_launcher_core::release::release_from_sums(
-            "storytold/dev-launcher-next",
-            "v0.9.0",
-            &sums("dev-launcher-0.9.0-linux-x86_64.AppImage"),
-        );
+        let renamed =
+            dev_launcher_core::release::release_from_sums("storytold/dev-launcher-next", "v0.9.0", &sums("dev-launcher-0.9.0-linux-x86_64.AppImage"));
         let carried = to_update_release(&renamed, "storytold/dev-launcher-next");
         assert!(craft_update::install::check_download_link(app, &carried, &carried.assets[0]).is_ok());
         let own = to_update_release(&renamed, "");

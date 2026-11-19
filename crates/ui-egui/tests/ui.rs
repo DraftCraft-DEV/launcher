@@ -136,11 +136,8 @@ impl Host for NoHost {}
 /// A harness that has the launcher's fonts, theme and image loaders before its first pass, and
 /// never paints a synthetic cursor into saved images.
 fn test_harness_builder<State>(theme: egui::Theme) -> egui_kittest::HarnessBuilder<State> {
-    let choice = if theme == egui::Theme::Dark {
-        dev_launcher_ui_egui::theme::ThemeChoice::Dark
-    } else {
-        dev_launcher_ui_egui::theme::ThemeChoice::Light
-    };
+    let choice =
+        if theme == egui::Theme::Dark { dev_launcher_ui_egui::theme::ThemeChoice::Dark } else { dev_launcher_ui_egui::theme::ThemeChoice::Light };
     egui_kittest::HarnessBuilder::default()
         // 0.37 defaults: strict accessible names and a panic on a missing glyph. Neither is
         // relaxed here; fixed controls are painter-drawn and dynamic notes/feed text uses the
@@ -260,17 +257,7 @@ fn harness_with_title_bar(
 }
 
 fn harness_with_discord(discord_url: Option<&'static str>) -> (Harness<'static, Option<LauncherUi>>, Rc<RefCell<Vec<Command>>>) {
-    harness_full(
-        events(),
-        ViewMode::Grid,
-        egui::Theme::Dark,
-        true,
-        1.0,
-        dev_launcher_ui_egui::TitleBar::Native,
-        Rc::default(),
-        None,
-        discord_url,
-    )
+    harness_full(events(), ViewMode::Grid, egui::Theme::Dark, true, 1.0, dev_launcher_ui_egui::TitleBar::Native, Rc::default(), None, discord_url)
 }
 
 #[allow(clippy::too_many_arguments)] // Test fixture inputs vary independently across existing cases.
@@ -1761,7 +1748,7 @@ fn grid_shows_every_status_and_installs_on_click() {
     // The window has no title bar of its own here (the web build, and the tests).
     assert!(h.query_by_label("Close").is_none());
     assert!(h.query_all_by_label_contains("Discord").count() >= 1); // the footer icon (the header has none)
-    assert!(h.query_by_label("Join the ArtCraft community on Discord").is_none(), "no Discord link in the header");
+    assert!(h.query_by_label("Join the DraftCraft community on Discord").is_none(), "no Discord link in the header");
     assert!(h.query_all_by_label("Coming soon").count() >= 1);
     h.get_by_label_contains("48 MB of 131 MB");
     h.get_by_label("Update all (2)").click();
@@ -2451,7 +2438,7 @@ fn settings_link_to_discord() {
         "the Settings hero icon must not repeat its heading"
     );
     snapshot(&mut h, "settings-dark");
-    h.get_by_label("Questions, ideas and news from the ArtCraft team");
+    h.get_by_label("Questions, ideas and news from the DraftCraft team");
     // The footer icon and the button in Settings.
     assert!(h.query_all_by_label_contains("Discord").count() >= 2);
 }
@@ -2719,9 +2706,7 @@ fn the_launcher_updates_itself_and_quits_to_restart() {
     h.run_steps(2);
     assert!(sent.borrow().contains(&Command::UpdateLauncher));
     // Downloading: the banner shows progress instead of the button.
-    shared_events
-        .borrow_mut()
-        .push(Event::Progress { app: "dev-launcher".into(), phase: JobPhase::Downloading { done: 5 << 20, total: 10 << 20 } });
+    shared_events.borrow_mut().push(Event::Progress { app: "dev-launcher".into(), phase: JobPhase::Downloading { done: 5 << 20, total: 10 << 20 } });
     h.run_steps(3);
     assert!(h.query_by_label("Update and restart").is_none());
     assert!(!quit.get());

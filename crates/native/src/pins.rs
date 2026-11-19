@@ -10,8 +10,8 @@
 use std::collections::BTreeMap;
 use std::path::Path;
 
-use dev_launcher_core::protocol::VersionTrack;
 use craft_update::pins::{Pins, VersionTrack as SharedTrack};
+use dev_launcher_core::protocol::VersionTrack;
 
 fn shared(track: &VersionTrack) -> SharedTrack {
     match track {

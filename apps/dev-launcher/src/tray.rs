@@ -55,9 +55,9 @@ impl Tray {
         let show = MenuItem::new(i18n::t("Show D.E.V. Launcher"), true, None);
         let check = MenuItem::new(i18n::t("Check for Updates"), true, None);
         use dev_launcher_core::catalog::{GITHUB_URL, WEBSITE_URL};
-        let website = MenuItem::new(i18n::t("Visit getartcraft.com"), true, None);
-        let github = MenuItem::new(i18n::t("ArtCraft on GitHub"), true, None);
-        let discord = MenuItem::new(i18n::t("Join the ArtCraft Discord"), true, None);
+        let website = MenuItem::new(i18n::t("Visit draftcraft.dev"), true, None);
+        let github = MenuItem::new(i18n::t("DraftCraft on GitHub"), true, None);
+        let discord = MenuItem::new(i18n::t("Join the DraftCraft Discord"), true, None);
         let quit = MenuItem::new(i18n::t("Quit D.E.V. Launcher"), true, None);
         let menu = Menu::new();
         menu.append_items(&[&show, &check, &PredefinedMenuItem::separator(), &website, &github, &discord, &PredefinedMenuItem::separator(), &quit])
@@ -108,9 +108,9 @@ impl Tray {
         let labels = vec![
             (show, "Show D.E.V. Launcher"),
             (check, "Check for Updates"),
-            (website, "Visit getartcraft.com"),
-            (github, "ArtCraft on GitHub"),
-            (discord, "Join the ArtCraft Discord"),
+            (website, "Visit draftcraft.dev"),
+            (github, "DraftCraft on GitHub"),
+            (discord, "Join the DraftCraft Discord"),
             (quit, "Quit D.E.V. Launcher"),
         ];
         Ok(Self { icon, show: show_id, check: check_id, quit: quit_id, rx, tooltip: String::new(), language: String::new(), labels })

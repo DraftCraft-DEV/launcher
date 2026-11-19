@@ -438,7 +438,9 @@ mod tests {
         let n = parse_asset_name("app-0.2.0-rc.1-windows-arm64-portable.zip", &["app"]).unwrap();
         assert_eq!((n.version.as_str(), n.token.as_str(), n.kind), ("0.2.0-rc.1", "windows-arm64", PackageKind::PortableZip));
         assert_eq!(parse_asset_name("app-1.0.0-macos-universal.dmg", &["app"]).unwrap().arch(), None);
-        for other in ["app-cli-1.0.0-macos-universal.zip", "app-web-1.0.0.zip", "app-1.0.0-linux-x86_64.AppImage.zsync", "other-1.0.0-linux-x86_64.AppImage"] {
+        for other in
+            ["app-cli-1.0.0-macos-universal.zip", "app-web-1.0.0.zip", "app-1.0.0-linux-x86_64.AppImage.zsync", "other-1.0.0-linux-x86_64.AppImage"]
+        {
             assert_eq!(parse_asset_name(other, &["app"]), None, "{other}");
         }
     }

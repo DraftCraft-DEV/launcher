@@ -113,7 +113,7 @@
 	Show the window on the current desktop	Afficher la fenêtre sur le bureau actuel
 	Start D.E.V. Launcher when I log in	Lancer D.E.V. Launcher à l'ouverture de session
 	Community	Communauté
-	Questions, ideas and news from the ArtCraft team	Questions, idées et actualités de l'équipe ArtCraft
+	Questions, ideas and news from the DraftCraft team	Questions, idées et actualités de l'équipe DraftCraft
 	Appearance	Apparence
 	Quit D.E.V. Launcher	Quitter D.E.V. Launcher
 	Done	Terminé
@@ -186,23 +186,6 @@
 	Tarball (.tar.gz)	Archive (.tar.gz)
 
 # Contextual: each app's tagline, keyed by app id
-artcraft	AI image and video creation	Création d'images et de vidéos par IA
-photocraft	Image editing	Retouche d'images
-vectorcraft	Vector illustration	Illustration vectorielle
-filmcraft	Video editing, color and sound	Montage vidéo, étalonnage et son
-lightcraft	Photo library and raw development	Photothèque et développement RAW
-pdfcraft	Reading, organizing and protecting PDFs	Lecture, organisation et protection de PDF
-effectcraft	Motion graphics and visual effects	Motion design et effets visuels
-designcraft	Page layout and publishing	Mise en page et édition
-wordcraft	Writing and document design	Rédaction et mise en forme de documents
-deckcraft	Presentations and slide shows	Présentations et diaporamas
-gridcraft	Spreadsheets and data	Tableurs et données
-craft-anything	Find out how any software works, then craft your own	Découvrez comment fonctionne n'importe quel logiciel, puis créez le vôtre
-solidcraft	Parametric 3D CAD	CAO paramétrique 3D
-mailcraft	Mail, calendar and contacts	Courrier, calendrier et contacts
-cadcraft	Computer-aided design and drafting	Conception et dessin assistés par ordinateur
-soundcraft	Recording, editing and mixing audio	Enregistrement, édition et mixage audio
-figcraft	Interface design and prototyping	Design d'interfaces et prototypage
 
 # Contextual: month abbreviations for date rendering
 month	Jan	janv.
@@ -223,8 +206,8 @@ month	Dec	déc.
 	Installing for {platform}	Installation pour {platform}
 	Downloads for {platform}	Téléchargements pour {platform}
 	No downloads for this system	Aucun téléchargement pour ce système
-	Join the ArtCraft community on Discord	Rejoindre la communauté ArtCraft sur Discord
-	ArtCraft on {name}	ArtCraft sur {name}
+	Join the DraftCraft community on Discord	Rejoindre la communauté DraftCraft sur Discord
+	DraftCraft on {name}	DraftCraft sur {name}
 	Couldn't open {name}: {e}	Impossible d'ouvrir {name} : {e}
 	Download cancelled	Téléchargement annulé
 	Available to install	Disponible à l'installation
@@ -265,7 +248,7 @@ month	Dec	déc.
 	Downloads the new version, replaces this one and opens it again	Télécharge la nouvelle version, remplace celle-ci et la rouvre
 	Couldn't check for updates: {f}	Impossible de rechercher les mises à jour : {f}
 	GitHub repository	Dépôt GitHub
-	ArtCraft	ArtCraft
+	DraftCraft	DraftCraft
 	Update 1 app	Mettre à jour 1 application
 	Update all ({count})	Tout mettre à jour ({count})
 	⊞  Grid	⊞  Grille
@@ -364,9 +347,9 @@ filter	Installed	Installées
 # Tray (menu bar) menu and tooltip
 	Show D.E.V. Launcher	Afficher D.E.V. Launcher
 	Check for Updates	Rechercher des mises à jour
-	Visit getartcraft.com	Visiter getartcraft.com
-	ArtCraft on GitHub	ArtCraft sur GitHub
-	Join the ArtCraft Discord	Rejoindre le Discord d'ArtCraft
+	Visit draftcraft.dev	Visiter draftcraft.dev
+	DraftCraft on GitHub	DraftCraft sur GitHub
+	Join the DraftCraft Discord	Rejoindre le Discord d'DraftCraft
 	App details	Détails de l'application
 	More actions for {name}	Autres actions pour {name}
 	Close (Esc)	Fermer (Esc)
@@ -426,31 +409,9 @@ column	Author	Auteur
 	Older launcher versions require a manual reinstall.	Les anciennes versions du lanceur nécessitent une réinstallation manuelle.
 	Your files may not open in older versions.	Tes fichiers pourraient ne pas s’ouvrir avec une ancienne version.
 	Enable automatic installs in Settings to follow new nightly builds.	Active les installations automatiques dans les paramètres pour recevoir les nouvelles versions nocturnes.
-texturecraft	3D texture painting	Peinture de textures 3D
-texturecraft	Paint materials on 3D models and export textures.	Peignez des matériaux sur des modèles 3D et exportez les textures.
-texturecraft	Materials	Matériaux
-texturecraft	Mesh maps	Cartes de maillage
-texturecraft	Bake mesh maps and use smart materials.	Calculez des cartes de maillage et utilisez des matériaux intelligents.
-texturecraft	Paint textures on 3D models.	Peignez des textures sur des modèles 3D.
 	Hide community apps	Masquer les applications communautaires
-materialcraft	Procedural material design	Conception de matériaux procéduraux
-materialcraft	Build materials with node graphs.	Créez des matériaux avec des graphes de nœuds.
-materialcraft	Create tileable PBR materials and export texture maps.	Créez des matériaux PBR répétables sans raccord et exportez des cartes de textures.
-materialcraft	Node graphs	Graphes de nœuds
-materialcraft	Combine noises, patterns and filters.	Combinez bruits, motifs et filtres.
-materialcraft	Live previews	Aperçus en direct
-materialcraft	Preview materials in 2D and on 3D models.	Visualisez les matériaux en 2D et sur des modèles 3D.
 	Advanced	Avancé
-	Migrate Flatpak bundles to ArtCraft OCI (experimental)	Migrer les paquets Flatpak vers ArtCraft OCI (expérimental)
-	On update, switch first party apps when the matching package is available. Otherwise, keep using bundles.	Lors des mises à jour, migrer les applications ArtCraft si le paquet correspondant est disponible. Sinon, continuer à utiliser les paquets autonomes.
 	The OCI repository is a preview with GPG verification disabled.	Le dépôt OCI est une version préliminaire avec la vérification GPG désactivée.
-anicraft	2D vector animation	Animation vectorielle 2D
-anicraft	Vector animation on a timeline you know.	Animation vectorielle sur une chronologie familière.
-anicraft	Open-source 2D vector animation, built in pure Rust.	Animation vectorielle 2D open source, conçue en pur Rust.
-anicraft	Familiar by design	Conception familière
-anicraft	Stage, tools, timeline, layers, keyframes, Properties and Library sit where animators expect them, with onion skinning for in-betweening.	Scène, outils, chronologie, calques, images clés, Propriétés et Bibliothèque là où les animateurs les attendent, avec pelure d'oignon.
-anicraft	Tweens that ease	Interpolations fluides
-anicraft	Classic tweens with eight easing presets and custom ease curves, plus shape tweens that morph one vector contour into another.	Interpolations classiques avec huit préréglages d'accélération et courbes personnalisées, plus interpolations de forme.
 	Version pinned to {version}. Click to unlock.	Version fixée à {version}. Cliquez pour la déverrouiller.
 	Unlock version?	Déverrouiller la version ?
 	{app} is pinned to {version}. Follow the latest release instead?	{app} est fixé à la version {version}. Suivre plutôt la dernière version ?
@@ -475,3 +436,5 @@ anicraft	Classic tweens with eight easing presets and custom ease curves, plus s
 	Added	Ajoutée
 	Remove	Retirer
 	Add	Ajouter
+draftcraft	2D CAD and drafting	CAO 2D et dessin technique
+tracedraw	Vector illustration and page layout	Illustration vectorielle et mise en page

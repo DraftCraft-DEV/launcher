@@ -114,7 +114,7 @@
 	Show the window on the current desktop	Показувати вікно на поточному робочому столі
 	Start D.E.V. Launcher when I log in	Запускати D.E.V. Launcher під час входу в систему
 	Community	Спільнота
-	Questions, ideas and news from the ArtCraft team	Запитання, ідеї та новини від команди ArtCraft
+	Questions, ideas and news from the DraftCraft team	Запитання, ідеї та новини від команди DraftCraft
 	Appearance	Зовнішній вигляд
 	Quit D.E.V. Launcher	Вийти з D.E.V. Launcher
 	Done	Готово
@@ -183,22 +183,6 @@
 	Tarball (.tar.gz)	Архів (.tar.gz)
 
 # Contextual: each app's tagline, keyed by app id
-photocraft	Image editing	Редагування зображень
-vectorcraft	Vector illustration	Векторна іллюстрація
-filmcraft	Video editing, color and sound	Монтаж відео, корекція кольору та звук
-lightcraft	Photo library and raw development	Фототека та проявка RAW
-pdfcraft	Reading, organizing and protecting PDFs	Читання, впорядкування та захист PDF
-effectcraft	Motion graphics and visual effects	Моушн-графіка та візуальні ефекти
-designcraft	Page layout and publishing	Верстка та публікації
-wordcraft	Writing and document design	Написання текстів та оформлення документів
-deckcraft	Presentations and slide shows	Презентації та слайд-шоу
-gridcraft	Spreadsheets and data	Електронні таблиці та дані
-craft-anything	Find out how any software works, then craft your own	Дізнайтеся, як працює будь-яка програма, і створіть свою
-solidcraft	Parametric 3D CAD	Параметричний 3D CAD
-mailcraft	Mail, calendar and contacts	Пошта, календар і контакти
-cadcraft	Computer-aided design and drafting	Комп’ютерне проєктування та креслення
-soundcraft	Recording, editing and mixing audio	Запис, редагування та зведення звуку
-figcraft	Interface design and prototyping	Дизайн інтерфейсів та прототипування
 
 # Contextual: month abbreviations for date rendering
 month	Jan	січ.
@@ -219,8 +203,8 @@ month	Dec	груд.
 	Installing for {platform}	Встановлення для {platform}
 	Downloads for {platform}	Завантаження для {platform}
 	No downloads for this system	Немає завантажень для цієї системи
-	Join the ArtCraft community on Discord	Приєднатися до спільноти ArtCraft у Discord
-	ArtCraft on {name}	ArtCraft на {name}
+	Join the DraftCraft community on Discord	Приєднатися до спільноти DraftCraft у Discord
+	DraftCraft on {name}	DraftCraft на {name}
 	Couldn't open {name}: {e}	Не вдалося відкрити {name}: {e}
 	Download cancelled	Завантаження скасовано
 	Available to install	Доступно для встановлення
@@ -260,7 +244,7 @@ month	Dec	груд.
 	Downloads the new version, replaces this one and opens it again	Завантажує нову версію, замінює цю і відкриває її знову
 	Couldn't check for updates: {f}	Не вдалося перевірити оновлення: {f}
 	GitHub repository	Репозиторій GitHub
-	ArtCraft	ArtCraft
+	DraftCraft	DraftCraft
 	Update 1 app	Оновити 1 застосунок
 	Update all ({count})	Оновити всі ({count})
 	⊞  Grid	⊞  Сітка
@@ -359,9 +343,9 @@ filter	Installed	Встановлені
 # Tray (menu bar) menu and tooltip
 	Show D.E.V. Launcher	Показати D.E.V. Launcher
 	Check for Updates	Перевірити оновлення
-	Visit getartcraft.com	Відкрити getartcraft.com
-	ArtCraft on GitHub	ArtCraft на GitHub
-	Join the ArtCraft Discord	Приєднатися до Discord ArtCraft
+	Visit draftcraft.dev	Відкрити draftcraft.dev
+	DraftCraft on GitHub	DraftCraft на GitHub
+	Join the DraftCraft Discord	Приєднатися до Discord DraftCraft
 	App details	Про застосунок
 	More actions for {name}	Інші дії для {name}
 	Close (Esc)	Закрити (Esc)
@@ -418,27 +402,7 @@ filter	Installed	Встановлені
 	Older launcher versions require a manual reinstall.	Для повернення до старішої версії лаунчера потрібне ручне перевстановлення.
 	Your files may not open in older versions.	У старіших версіях ваші файли можуть не відкритися.
 	Enable automatic installs in Settings to follow new nightly builds.	Щоб отримувати нові нічні збірки, увімкніть автоматичне встановлення в налаштуваннях.
-texturecraft	3D texture painting	Малювання 3D-текстур
-texturecraft	Paint materials on 3D models and export textures.	Малюйте матеріали на 3D-моделях і експортуйте текстури.
-texturecraft	Materials	Матеріали
-texturecraft	Mesh maps	Карти сітки
-texturecraft	Bake mesh maps and use smart materials.	Запікайте карти сітки та використовуйте розумні матеріали.
-texturecraft	Paint textures on 3D models.	Малюйте текстури на 3D-моделях.
-materialcraft	Procedural material design	Процедурний дизайн матеріалів
-materialcraft	Build materials with node graphs.	Створюйте матеріали за допомогою графів вузлів.
-materialcraft	Create tileable PBR materials and export texture maps.	Створюйте безшовні PBR-матеріали та експортуйте карти текстур.
-materialcraft	Node graphs	Графи вузлів
-materialcraft	Combine noises, patterns and filters.	Поєднуйте шуми, візерунки та фільтри.
-materialcraft	Live previews	Перегляд у реальному часі
-materialcraft	Preview materials in 2D and on 3D models.	Переглядайте матеріали у 2D та на 3D-моделях.
 	Hide community apps	Приховати застосунки спільноти
-anicraft	2D vector animation	2D-векторна анімація
-anicraft	Vector animation on a timeline you know.	Векторна анімація на звичній шкалі часу.
-anicraft	Open-source 2D vector animation, built in pure Rust.	2D-векторна анімація з відкритим кодом, написана на чистому Rust.
-anicraft	Familiar by design	Звичний інтерфейс
-anicraft	Stage, tools, timeline, layers, keyframes, Properties and Library sit where animators expect them, with onion skinning for in-betweening.	Сцена, інструменти, шкала часу, шари, ключові кадри, Властивості та Бібліотека розташовані там, де їх очікують аніматори, а шлейф кальки полегшує роботу з проміжними кадрами.
-anicraft	Tweens that ease	Плавні переходи
-anicraft	Classic tweens with eight easing presets and custom ease curves, plus shape tweens that morph one vector contour into another.	Класичні переходи з вісьмома пресетами плавності та власними кривими, а також переходи, що перетворюють один векторний контур на інший.
 
 # Agent integration and download scheduling.
 	AI agents	ШІ-агенти
@@ -462,3 +426,5 @@ anicraft	Classic tweens with eight easing presets and custom ease curves, plus s
 	Simultaneous downloads	Одночасні завантаження
 	The Craft gateway (craft-ai-mcp) is not installed beside the launcher.	Шлюз Craft (craft-ai-mcp) не встановлено поруч із лаунчером.
 	Waiting for another download…	Очікування іншого завантаження…
+draftcraft	2D CAD and drafting	2D САПР і креслення
+tracedraw	Vector illustration and page layout	Векторна ілюстрація та верстка

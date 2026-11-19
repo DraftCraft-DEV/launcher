@@ -117,7 +117,7 @@
 	Show the window on the current desktop	現在のデスクトップにウィンドウを表示
 	Start D.E.V. Launcher when I log in	ログイン時に D.E.V. Launcher を起動
 	Community	コミュニティ
-	Questions, ideas and news from the ArtCraft team	ArtCraft チームからの質問、アイデア、ニュース
+	Questions, ideas and news from the DraftCraft team	DraftCraft チームからの質問、アイデア、ニュース
 	Appearance	外観
 	Quit D.E.V. Launcher	D.E.V. Launcher を終了
 	Done	完了
@@ -190,23 +190,6 @@
 	Tarball (.tar.gz)	tarball (.tar.gz)
 
 # Contextual: each app's tagline, keyed by app id
-artcraft	AI image and video creation	AI画像・動画生成
-photocraft	Image editing	画像編集
-vectorcraft	Vector illustration	ベクターイラスト
-filmcraft	Video editing, color and sound	動画編集、カラー、サウンド
-lightcraft	Photo library and raw development	フォトライブラリと RAW 現像
-pdfcraft	Reading, organizing and protecting PDFs	PDF の閲覧、整理、保護
-effectcraft	Motion graphics and visual effects	モーショングラフィックスと視覚効果
-designcraft	Page layout and publishing	ページレイアウトと出版
-wordcraft	Writing and document design	文書作成とデザイン
-deckcraft	Presentations and slide shows	プレゼンテーションとスライドショー
-gridcraft	Spreadsheets and data	表計算とデータ
-craft-anything	Find out how any software works, then craft your own	あらゆるソフトウェアの仕組みを知り、自分だけのものを作る
-solidcraft	Parametric 3D CAD	パラメトリック3D CAD
-mailcraft	Mail, calendar and contacts	メール、カレンダー、連絡先
-cadcraft	Computer-aided design and drafting	コンピューター支援設計と製図
-soundcraft	Recording, editing and mixing audio	オーディオの録音、編集、ミックス
-figcraft	Interface design and prototyping	インターフェースデザインとプロトタイピング
 
 # Contextual: month abbreviations for date rendering
 month	Jan	1月
@@ -227,8 +210,8 @@ month	Dec	12月
 	Installing for {platform}	{platform} にインストール
 	Downloads for {platform}	{platform} 用のダウンロード
 	No downloads for this system	このシステム用のダウンロードはありません
-	Join the ArtCraft community on Discord	Discord で ArtCraft コミュニティに参加
-	ArtCraft on {name}	{name} の ArtCraft
+	Join the DraftCraft community on Discord	Discord で DraftCraft コミュニティに参加
+	DraftCraft on {name}	{name} の DraftCraft
 	Couldn't open {name}: {e}	{name} を開けませんでした: {e}
 	Download cancelled	ダウンロードをキャンセルしました
 	Available to install	インストール可能
@@ -270,7 +253,7 @@ month	Dec	12月
 	Couldn't check for updates: {f}	更新を確認できませんでした: {f}
 	Website (coming soon)	ウェブサイト（近日公開）
 	GitHub repository	GitHub リポジトリ
-	ArtCraft	ArtCraft
+	DraftCraft	DraftCraft
 	Update 1 app	1 個のアプリを更新
 	Update all ({count})	すべて更新（{count}）
 	⊞  Grid	⊞  グリッド
@@ -383,9 +366,9 @@ filter	Installed	インストール済み
 # Tray (menu bar) menu and tooltip
 	Show D.E.V. Launcher	D.E.V. Launcher を表示
 	Check for Updates	更新を確認
-	Visit getartcraft.com	getartcraft.com を開く
-	ArtCraft on GitHub	GitHub の ArtCraft
-	Join the ArtCraft Discord	ArtCraft Discord に参加
+	Visit draftcraft.dev	draftcraft.dev を開く
+	DraftCraft on GitHub	GitHub の DraftCraft
+	Join the DraftCraft Discord	DraftCraft Discord に参加
 @plural	D.E.V. Launcher · {n} update available|D.E.V. Launcher · {n} updates available	D.E.V. Launcher · {n} 件の更新があります
 
 	Download size: {size}	ダウンロードサイズ: {size}
@@ -431,31 +414,9 @@ column	Author	作者
 	Older launcher versions require a manual reinstall.	古いランチャーに戻すには手動で再インストールする必要があります。
 	Your files may not open in older versions.	古いバージョンではファイルを開けない場合があります。
 	Enable automatic installs in Settings to follow new nightly builds.	新しいナイトリービルドを自動的に受け取るには、設定で自動インストールを有効にしてください。
-texturecraft	3D texture painting	3Dテクスチャペイント
-texturecraft	Paint materials on 3D models and export textures.	3Dモデルにマテリアルを塗り、テクスチャを書き出します。
-texturecraft	Materials	マテリアル
-texturecraft	Mesh maps	メッシュマップ
-texturecraft	Bake mesh maps and use smart materials.	メッシュマップをベイクし、スマートマテリアルを使用します。
-texturecraft	Paint textures on 3D models.	3Dモデルにテクスチャを描きます。
 	Hide community apps	コミュニティアプリを非表示
-materialcraft	Procedural material design	プロシージャルマテリアルの作成
-materialcraft	Build materials with node graphs.	ノードグラフでマテリアルを作成します。
-materialcraft	Create tileable PBR materials and export texture maps.	継ぎ目なく繰り返せるPBRマテリアルを作成し、テクスチャマップを書き出します。
-materialcraft	Node graphs	ノードグラフ
-materialcraft	Combine noises, patterns and filters.	ノイズ、パターン、フィルターを組み合わせます。
-materialcraft	Live previews	リアルタイムプレビュー
-materialcraft	Preview materials in 2D and on 3D models.	マテリアルを2Dと3Dモデル上でプレビューします。
 	Advanced	詳細設定
-	Migrate Flatpak bundles to ArtCraft OCI (experimental)	Flatpak バンドルを ArtCraft OCI に移行する（実験的）
-	On update, switch first party apps when the matching package is available. Otherwise, keep using bundles.	更新時に対応するパッケージがあれば ArtCraft 公式アプリを移行します。なければ引き続きバンドルを使用します。
 	The OCI repository is a preview with GPG verification disabled.	OCI リポジトリはプレビュー版で、GPG 検証は無効になっています。
-anicraft	2D vector animation	2Dベクターアニメーション
-anicraft	Vector animation on a timeline you know.	慣れ親しんだタイムラインでのベクターアニメーション。
-anicraft	Open-source 2D vector animation, built in pure Rust.	ピュアRustで構築されたオープンソースの2Dベクターアニメーション。
-anicraft	Familiar by design	直感的なデザイン
-anicraft	Stage, tools, timeline, layers, keyframes, Properties and Library sit where animators expect them, with onion skinning for in-betweening.	ステージ、ツール、タイムライン、レイヤー、キーフレーム、プロパティ、ライブラリが期待通りの場所に配置され、オニオンスキンも備えています。
-anicraft	Tweens that ease	滑らかなトゥイーン
-anicraft	Classic tweens with eight easing presets and custom ease curves, plus shape tweens that morph one vector contour into another.	8つのイージングプリセットとカスタム曲線を持つクラシックトゥイーン、そしてシェイプトゥイーンに対応。
 	Version pinned to {version}. Click to unlock.	バージョンは {version} に固定されています。クリックすると固定を解除します。
 	Unlock version?	バージョンの固定を解除しますか？
 	{app} is pinned to {version}. Follow the latest release instead?	{app} は {version} に固定されています。代わりに最新リリースを使用しますか？
@@ -480,3 +441,5 @@ anicraft	Classic tweens with eight easing presets and custom ease curves, plus s
 	Added	追加済み
 	Remove	削除
 	Add	追加
+draftcraft	2D CAD and drafting	2D CAD と製図
+tracedraw	Vector illustration and page layout	ベクターイラストとページレイアウト
