@@ -8,7 +8,7 @@
       -culture en-US -loc dev-launcher.en-us.wxl -d Version=1.2.3 -d DisplayVersion=1.2.3-rc.1
       -d BinDir=... -d IconPath=... -d BannerBmp=... -d DialogBmp=... -o out.msi
 
-  Per-user install (no UAC prompt), by default into %LOCALAPPDATA%\Programs\DraftCraft Engineering Ventures\D.E.V. Launcher, so
+  Per-user install (no UAC prompt), by default into %LOCALAPPDATA%\Programs\DraftCraft Engineering Ventures\Launcher, so
   the launcher can update itself without elevation, plus a Start Menu shortcut. The shortcut
   carries the AppUserModelID dev.draftcraft.Launcher, which Windows needs to show toast
   notifications from an unpackaged app and to group the taskbar button. No file associations.

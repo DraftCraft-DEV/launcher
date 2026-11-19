@@ -118,8 +118,9 @@ text use the system's own font; never bundle one.
 
 `draftcraft-launcher` is the default branch and the main line of D.E.V. Launcher; agents push
 their work there. `artcraft-launcher` is a record of the ArtCraft Launcher code this project started
-from: never push to it, merge into it or delete it. Every push to `draftcraft-launcher` builds test
-downloads (`.github/workflows/test-build.yml`, under the run's Artifacts).
+from: never push to it, merge into it or delete it. Every push to `draftcraft-launcher` builds the
+installers and tests each one by installing, checking and uninstalling it, like DraftCraft's own
+(`.github/workflows/packages.yml`; downloads under the run's Artifacts, with `SHA256SUMS.txt`).
 
 ## 3. Before you finish a task
 
@@ -151,7 +152,7 @@ Release assets (keep these names exact; the launcher's own self-update and the R
 Packaging facts the code relies on:
 
 - The Windows MSI is **per-user** (no UAC prompt), by default into
-  `%LOCALAPPDATA%\Programs\D.E.V. Launcher`. Double-clicked it opens a WixUI setup wizard
+  `%LOCALAPPDATA%\Programs\DraftCraft Engineering Ventures\Launcher`. Double-clicked it opens a WixUI setup wizard
   (Welcome; a folder page with a "Create a desktop shortcut" box; Ready; progress; Finish with
   "Launch"), whose art `package.ps1` draws at build time; self-update runs it with `/passive`, no
   wizard. The folder and the shortcut choice are recorded under

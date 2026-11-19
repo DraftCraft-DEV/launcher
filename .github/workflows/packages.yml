@@ -1,0 +1,247 @@
+# D.E.V. Launcher's installers, built and then tested the way DraftCraft's own are
+# (DraftCraft-DEV/DraftCraft .github/workflows/packages.yml): each one is installed on a throwaway
+# runner, checked, and uninstalled, and the set ships with SHA256SUMS.txt.
+#
+#   Windows x64   per-user MSI (setup wizard) + portable zip   install, check, upgrade-repair, uninstall
+#   macOS arm64   DMG with D.E.V. Launcher.app                  mount, check signature and bundle
+#   Linux x86_64  AppImage, .deb, .rpm, tar.gz                  install the .deb, check, remove
+#
+# Signing is optional: with the repository's signing secrets the packaging scripts sign (and
+# notarize on macOS); without them they warn and the builds are unsigned test builds.
+# Standard GitHub actions only, so this runs in a private repository too. Downloads: the run's
+# Artifacts. Nothing is published.
+name: Packages
+
+on:
+  push:
+    branches: [draftcraft-launcher]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: packages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  windows:
+    name: Windows x64
+    runs-on: windows-2022
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Rust
+        shell: bash
+        run: |
+          rustup toolchain install stable --profile minimal --target x86_64-pc-windows-msvc
+          rustup default stable
+      - name: Install WiX
+        shell: pwsh
+        run: |
+          dotnet tool install --global wix --version 5.0.2
+          wix extension add -g WixToolset.UI.wixext/5.0.2 WixToolset.Util.wixext/5.0.2
+          wix --version
+      - name: Build, sign and package
+        shell: pwsh
+        env:
+          # Optional: without them sign.ps1 warns and leaves the files unsigned.
+          WINDOWS_CERTIFICATE: ${{ secrets.WINDOWS_CERTIFICATE }}
+          WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
+        run: |
+          $env:DEV_LAUNCHER_BUILD_SHA = (git rev-parse HEAD)
+          $env:DEV_LAUNCHER_REQUIRE_WINRES = '1'
+          ./packaging/windows/package.ps1 -Arch x64
+          Get-ChildItem dist/release
+      - name: Check the MSI's tables
+        shell: pwsh
+        run: ./packaging/windows/check-install-policy.ps1 -MsiPath (Resolve-Path 'dist/release/dev-launcher-*-windows-x64.msi').Path
+      - name: Install, check and uninstall the installer
+        # A real install on this throwaway runner, for this account (no administrator), as a
+        # double-click with the default choices does.
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $msi = (Resolve-Path 'dist/release/dev-launcher-*-windows-x64.msi').Path
+          $key = 'HKCU:\Software\DraftCraft Engineering Ventures\D.E.V. Launcher'
+          function Install([string] $what) {
+            $log = Join-Path $env:RUNNER_TEMP "$what.log"
+            $p = Start-Process msiexec.exe -ArgumentList @('/i', "`"$msi`"", '/qn', '/l*v', "`"$log`"") -Wait -PassThru
+            if ($p.ExitCode -ne 0) { Get-Content $log -Tail 80; throw "$what failed: $($p.ExitCode)" }
+          }
+          Install 'install'
+          $exe = (Get-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\App Paths\dev-launcher.exe').'(default)'
+          if (-not (Test-Path $exe)) { throw "App Paths names a missing exe: $exe" }
+          $dir = (Get-ItemProperty $key).InstallDir
+          if (-not $dir -or -not (Test-Path (Join-Path $dir 'dev-launcher.exe'))) { throw "InstallDir is wrong: $dir" }
+          if ($dir -notlike "$env:LOCALAPPDATA\*") { throw "not a per-user install: $dir" }
+          if (Test-Path (Join-Path $dir 'craft-ai-mcp.exe')) { throw 'the old AI gateway is still shipped' }
+          $menu = Get-ChildItem "$env:APPDATA\Microsoft\Windows\Start Menu\Programs" -Recurse -Filter 'D.E.V. Launcher.lnk'
+          if (-not $menu) { throw 'no Start menu shortcut' }
+          $ver = & $exe --version
+          if ($LASTEXITCODE -ne 0) { throw 'dev-launcher --version failed' }
+          Write-Output "installed: $exe ($ver)"
+          # The uninstall entry names our publisher, never ArtCraft.
+          $entry = Get-ChildItem 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall' |
+            ForEach-Object { Get-ItemProperty $_.PSPath } | Where-Object { $_.DisplayName -eq 'D.E.V. Launcher' }
+          if (-not $entry) { throw 'no uninstall entry named D.E.V. Launcher' }
+          if ($entry.Publisher -ne 'DraftCraft Engineering Ventures') { throw "publisher is $($entry.Publisher)" }
+          # Running the same installer again repairs in place and keeps the folder.
+          Install 'reinstall'
+          if ((Get-ItemProperty $key).InstallDir -ne $dir) { throw 'reinstall moved the install folder' }
+          $p = Start-Process msiexec.exe -ArgumentList @('/x', "`"$msi`"", '/qn') -Wait -PassThru
+          if ($p.ExitCode -ne 0) { throw "uninstall failed: $($p.ExitCode)" }
+          if (Test-Path (Join-Path $dir 'dev-launcher.exe')) { throw "uninstall left $dir\dev-launcher.exe" }
+          if (Get-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\App Paths\dev-launcher.exe' -ErrorAction SilentlyContinue) { throw 'uninstall left App Paths' }
+          Write-Output 'installed per-user, reinstalled in place, and uninstalled cleanly'
+      - name: Check the portable zip
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $zip = (Resolve-Path 'dist/release/dev-launcher-*-windows-x64-portable.zip').Path
+          $out = Join-Path $env:RUNNER_TEMP 'portable'
+          Expand-Archive $zip $out
+          $exe = Get-ChildItem $out -Recurse -Filter dev-launcher.exe | Select-Object -First 1
+          if (-not (Test-Path (Join-Path $exe.DirectoryName 'portable.txt'))) { throw 'portable.txt missing beside the exe' }
+          & $exe.FullName --version
+          if ($LASTEXITCODE -ne 0) { throw 'portable dev-launcher --version failed' }
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: dev-launcher-windows-x64
+          path: |
+            dist/release/*.msi
+            dist/release/*.zip
+          if-no-files-found: error
+
+  macos:
+    name: macOS arm64
+    runs-on: macos-15
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Rust
+        run: |
+          rustup toolchain install stable --profile minimal --target aarch64-apple-darwin
+          rustup default stable
+      - name: Import the signing certificate
+        # Optional: without APPLE_CERTIFICATE the script warns, and package.sh signs ad hoc.
+        env:
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+        run: packaging/macos/import-cert.sh
+      - name: Build and package
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          set -euo pipefail
+          export DEV_LAUNCHER_BUILD_SHA="$(git rev-parse HEAD)"
+          packaging/macos/package.sh --arch aarch64
+          ls -l dist/release
+      - name: Check the DMG and the app
+        run: |
+          set -euo pipefail
+          packaging/macos/verify.sh --arch aarch64
+          dmg="$(ls dist/release/dev-launcher-*-macos-aarch64.dmg)"
+          mnt="$(mktemp -d)"
+          hdiutil attach -nobrowse -readonly -mountpoint "$mnt" "$dmg"
+          app="$mnt/D.E.V. Launcher.app"
+          test -x "$app/Contents/MacOS/D.E.V. Launcher"
+          test "$(plutil -extract CFBundleIdentifier raw -o - "$app/Contents/Info.plist")" = dev.draftcraft.Launcher
+          # A normal Dock app: LSUIElement must never be set.
+          ! plutil -extract LSUIElement raw -o - "$app/Contents/Info.plist" 2>/dev/null
+          test ! -e "$app/Contents/MacOS/craft-ai-mcp"
+          codesign --verify --deep --strict "$app"
+          "$app/Contents/MacOS/D.E.V. Launcher" --version
+          hdiutil detach "$mnt"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: dev-launcher-macos-arm64
+          path: dist/release/*.dmg
+          if-no-files-found: error
+
+  linux:
+    name: Linux x86_64
+    # The oldest supported runner, so the binaries run on any newer glibc.
+    runs-on: ubuntu-22.04
+    timeout-minutes: 90
+    env:
+      NFPM_VERSION: 2.48.0
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Rust
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+      - name: Install build and packaging tools
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y desktop-file-utils appstream zsync libxkbcommon-dev libwayland-dev libx11-dev libdbus-1-dev pkg-config
+          # nfpm builds the .deb and .rpm; its release is checked against the published checksums.
+          cd "$RUNNER_TEMP"
+          base="https://github.com/goreleaser/nfpm/releases/download/v$NFPM_VERSION"
+          pkg="nfpm_${NFPM_VERSION}_amd64.deb"
+          curl --proto '=https' -fsSLO "$base/$pkg"
+          curl --proto '=https' -fsSLO "$base/checksums.txt"
+          grep " $pkg\$" checksums.txt | sha256sum --check -
+          sudo dpkg -i "$pkg"
+          nfpm --version
+      - name: Build and package
+        run: |
+          set -euo pipefail
+          export DEV_LAUNCHER_BUILD_SHA="$(git rev-parse HEAD)"
+          packaging/linux/package.sh --formats "appimage deb rpm tar"
+          ls -l dist/release
+      - name: Install, check and remove the .deb
+        run: |
+          set -euo pipefail
+          deb="$(ls dist/release/dev-launcher-*-linux-x86_64.deb)"
+          dpkg-deb --info "$deb"
+          test "$(dpkg-deb --field "$deb" Package)" = dev-launcher
+          dpkg-deb --contents "$deb"
+          if dpkg-deb --contents "$deb" | grep -q craft-ai-mcp; then echo 'the old AI gateway is still shipped' >&2; exit 1; fi
+          sudo apt-get install -y "./$deb"
+          test -x /usr/bin/dev-launcher
+          desktop-file-validate /usr/share/applications/dev.draftcraft.Launcher.desktop
+          test -f /usr/share/icons/hicolor/256x256/apps/dev.draftcraft.Launcher.png
+          appstreamcli validate --no-net /usr/share/metainfo/dev.draftcraft.Launcher.metainfo.xml || true
+          dev-launcher --version
+          sudo apt-get remove -y dev-launcher
+          test ! -e /usr/bin/dev-launcher
+          # The AppImage starts (extracted: CI runners have no FUSE).
+          appimage="$(ls dist/release/dev-launcher-*-linux-x86_64.AppImage)"
+          chmod +x "$appimage"
+          APPIMAGE_EXTRACT_AND_RUN=1 "$appimage" --version
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: dev-launcher-linux-x86_64
+          path: |
+            dist/release/*.AppImage
+            dist/release/*.deb
+            dist/release/*.rpm
+            dist/release/*.tar.gz
+          if-no-files-found: error
+
+  checksums:
+    name: SHA256SUMS
+    needs: [windows, macos, linux]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: all
+          merge-multiple: true
+      - name: Checksums
+        run: |
+          set -euo pipefail
+          cd all
+          sha256sum * > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: dev-launcher-all-with-SHA256SUMS
+          path: all/*
+          if-no-files-found: error
