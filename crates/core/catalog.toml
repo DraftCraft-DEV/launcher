@@ -12,7 +12,7 @@ color = [31, 95, 175]
 ink_light = [24, 74, 140]
 ink_dark = [141, 184, 240]
 kind = "official"
-publisher = "DraftCraft Engineering Ventures"
+publisher = "D.E.V."
 repo = "DraftCraft-DEV/DraftCraft"
 site = "https://github.com/DraftCraft-DEV/DraftCraft"
 # DraftCraft's Windows installer registers as "DraftCraft" by "Skryx Dev".
@@ -24,7 +24,7 @@ former_ids = []
 former_names = []
 mac_bundle_name = "DraftCraft"
 [apps.details]
-headline = "2D drafting with the ribbon you know, built in pure Rust."
+headline = "2D drafting with the ribbon you know."
 about = "DraftCraft is an open-source CAD and drafting application with a Windows-style ribbon and AutoCAD's command names at its command line. It reads and writes DWG and DXF itself, in every version from AutoCAD 2000 to 2018.\n\nIt runs natively on Windows, macOS and Linux, and agents can drive it through MCP, a control channel and its command-line tool."
 platforms = "Windows, macOS, Linux, web"
 [[apps.details.features]]

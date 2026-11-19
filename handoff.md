@@ -55,72 +55,43 @@ Owner decisions that bind the work:
 4. **Translations:** ArtCraft strings swapped for DraftCraft's in every catalog; DraftCraft's and
    TraceDraw's taglines added in all 13 complete languages; ArtCraft apps' rows removed.
 
-## Test status at hand-off
+5. **Gate green** (fmt, clippy -D warnings, every test, wasm). Windows portable installs accept an
+   exe that reports no version and refuse only a different one. The MSI has its own UpgradeCode and
+   component GUIDs, so it can never replace ArtCraft Launcher.
+6. **No ArtCraft at runtime:** our own data folders, desktop-file marker (`X-DEV-Launcher=true`),
+   version pins (`<data>/versions/versions.json`), install folder `DraftCraft Engineering Ventures`;
+   the hosted release-feed URL is deleted (the format stays for the loopback mirror).
+7. **Packaging and documents:** the AI gateway is out of every package; Windows installer text,
+   folder, links and wizard art; AppStream, desktop file and AppRun marker; macOS DMG background and
+   copyright; `AGENTS.md` rewritten for this repo; `NOTICE`, `ATTRIBUTION.md`,
+   `assets/brand/LICENSE-brand.txt`, `assets/app-icon/{README.md,LICENSE.txt}`.
+8. **Looked at it:** the real app runs and fetches DraftCraft v2.2.0 live from GitHub
+   (screenshot sent in the chat). The byline shows "by D.E.V." (the full name did not fit the card).
 
-- `dev-launcher-core`: all pass.
-- `dev-launcher-native`: all pass except two. `process::tests::running_paths_are_matched_literally`
-  also fails on untouched upstream (environment: a non-ASCII `/tmp` path), so it is not ours.
-  `detect::tests::the_launcher_records_its_folder_under_the_publisher_key` expects the old registry
-  path: update its expectation to `SOFTWARE\DraftCraft Engineering Ventures\D.E.V. Launcher`.
-- `dev-launcher-ui-egui`: 105 lib tests pass; one fails,
-  `install_target::tests::an_update_keeps_the_installed_copys_format_as_the_backend_does`. Not
-  investigated yet. The integration tests (`crates/ui-egui/tests/`) were not run after the last
-  changes.
-- **Not run yet:** `cargo xtask ci` as a whole (fmt, clippy -D warnings, wasm), the desktop app
-  itself, a screenshot, and a live install against the real releases.
+## Test status
 
-## What is left, in order
+All of `cargo test --workspace` passes, the UI snapshot tests included (with a software Vulkan
+driver), except `process::tests::running_paths_are_matched_literally`, which also fails on
+untouched upstream in this container (a non-ASCII `/tmp` path). GitHub's CI covers it.
 
-1. **Get the gate green:** `cargo xtask ci`. Fix the two tests above and whatever clippy, fmt and
-   the integration tests report. Expect tests in `crates/ui-egui/tests/*.rs` that assert
-   ArtCraft-era text or links.
-2. **Windows: the version check on portable zips.** After unzipping, `install.rs` compares the
-   exe's file version with the release (`detect::windows::executable_version`). DraftCraft's exe
-   sets one; check TraceDraw's. If an exe carries none, the install rolls back, so skip the check
-   when the exe has no version (keep it when it has one), with a test.
-3. **Remaining ArtCraft text** (code comments, docs, packaging):
-   `git grep -i -E 'artcraft|storytold|getartcraft|storyteller' -- ':!LICENSE*' ':!NOTICE' ':!Cargo.lock' ':!crates/core/tests/fixtures'`.
-   The biggest are `README.md`, `ATTRIBUTION.md`, `AGENTS.md`, `crates/native/src/install.rs`,
-   `packages.rs`, `release.rs`, `login.rs` (start at login), `crates/native/src/desktop_entry.rs`
-   (desktop file categories per app: add `draftcraft`/`tracedraw`, drop the Craft apps) and the
-   language tests (`crates/ui-egui/tests/{german,japanese,...}.rs`).
-   - Keep `storytold/craft-libs` (craft-update, craft-flags, the egui fork) and
-     `storytold/craft-common-actions` (CI): MIT/Apache dependencies, not branding.
-4. **Documents:**
-   - `README.md` (what it is, downloads, credit to ArtCraft Launcher);
-   - `AGENTS.md` (rewrite for this repository: keep never-crash, verified downloads, no silent
-     elevation; this repo's own approved-app rule naming DraftCraft and TraceDraw; drop ArtCraft's
-     house rules);
-   - `NOTICE` (keep ArtCraft Launcher's copyright and licence; add DraftCraft Engineering Ventures);
-   - `ATTRIBUTION.md` (rows for `assets/brand/*` (the D.E.V. brand: DraftCraft Engineering
-     Ventures' trademark artwork, not MIT/Apache), `assets/app-icon/*` (rendered from it), `assets/app-icons/draftcraft.png`
-     (from DraftCraft-DEV/DraftCraft, the DraftCraft trademark of DraftCraft Engineering Ventures)
-     and `tracedraw.png` (from tracedraw/tracedraw at 0fdff91, MIT OR Apache-2.0); remove rows of
-     deleted files);
-   - `assets/brand/LICENSE-brand.txt`: terms for the D.E.V. name, mark and logos (owner:
-     DraftCraft Engineering Ventures), like DraftCraft's `docs/brand/LICENSE-brand.txt`;
-   - `assets/app-icon/README.md` and `LICENSE.txt`.
-5. **Packaging:**
-   - **WiX:** give `packaging/windows/dev-launcher.wxs` a **new `UpgradeCode`** (and new component
-     GUIDs). It still has ArtCraft Launcher's, so our MSI would replace ArtCraft Launcher on a
-     user's machine. Must change before any release.
-   - **Art and names:** the Windows wizard art in `package.ps1` and the macOS DMG background
-     (`packaging/macos/dmg/`) still use the ArtCraft wordmark/mark; draw them from
-     `assets/brand/`. Remove `craft-ai-mcp` from `packaging/{linux,freebsd,macos}` and the Flatpak
-     manifests. Check `packaging/linux/*.desktop` and metainfo text.
-6. **CI and releases:** the workflows call `storytold/craft-common-actions`; check they run for
+## What is left
+
+1. **CI and releases:** the workflows call `storytold/craft-common-actions`; check they run for
    `DraftCraft-DEV/launcher` (secrets, signing). The release workflow publishes
    `dev-launcher-<ver>-…` assets and `SHA256SUMS.txt`, which the self-update reads.
-7. **Look at it:** `cargo run -p dev-launcher`, screenshot both themes, check the header, the two
-   cards, Settings and About.
-   - **Header:** it draws the avatar and "D.E.V. LAUNCHER" in the display font. Consider the
-     official lockup instead: `dev-wordmark.svg` on light, `dev-wordmark-dark.svg` on dark, or the
-     mark alone (`dev-mark.svg` / `dev-mark-dark.svg`).
-   - **Icon detail for the owner's designer:** the avatar is a square tile, while macOS icons are
-     usually rounded; and at 16–32 px the hexagons are small in the tile, so a tighter crop for the
-     small sizes would read better.
-8. **Live check:** install DraftCraft and TraceDraw on Windows (portable zip), Linux (AppImage) and
-   macOS (opened if present; not installed until their DMGs carry a Developer ID, by design).
+2. **Owner values:** the Linux package maintainer field is the repo URL; give it a DEV contact
+   address if you want one (`packaging/linux/package.sh`). The Flatpak OCI registry is
+   `ghcr.io/draftcraft-dev/dev-launcher`.
+3. **macOS self-update:** craft-update pins ArtCraft's Developer ID team, so the launcher refuses to
+   update itself on a Mac (safe, but it doesn't update). Needs a DEV Developer ID and a craft-update
+   option for the team.
+4. **Live check:** install DraftCraft and TraceDraw on Windows (portable zip), Linux (AppImage) and
+   macOS (opened if present). TraceDraw could not be checked live here: this container's proxy
+   refused its GitHub pages.
+5. Code comments and test data still name ArtCraft apps (the test fixture catalog keeps upstream's
+   apps on purpose). Users never see them.
+6. **Header and icon ideas** for the owner's designer: the official lockup (`dev-wordmark*.svg`) in
+   the header; a rounded or tighter-cropped icon for macOS and the 16–32 px sizes.
 
 ## Later (owner decisions)
 
