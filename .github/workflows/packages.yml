@@ -86,10 +86,14 @@ jobs:
           if ($ver -notlike 'dev-launcher *') { throw "unexpected --version output: $ver" }
           Write-Output "installed: $exe ($ver)"
           # The uninstall entry names our publisher, never ArtCraft.
-          $entry = Get-ChildItem 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall' |
-            ForEach-Object { Get-ItemProperty $_.PSPath } | Where-Object { $_.DisplayName -eq 'D.E.V. Launcher' }
-          if (-not $entry) { throw 'no uninstall entry named D.E.V. Launcher' }
-          if ($entry.Publisher -ne 'DraftCraft Engineering Ventures') { throw "publisher is $($entry.Publisher)" }
+          # A per-user MSI's Apps & features entry lives in Windows Installer's own records, not
+          # under HKCU\...\Uninstall: ask Windows Installer (all contexts, this user).
+          $wi = New-Object -ComObject WindowsInstaller.Installer
+          $entry = @($wi.ProductsEx('', '', 7)) | Where-Object { $_.InstallProperty('ProductName') -eq 'D.E.V. Launcher' } | Select-Object -First 1
+          if (-not $entry) { throw 'Windows Installer lists no product named D.E.V. Launcher' }
+          $publisher = $entry.InstallProperty('Publisher')
+          if ($publisher -ne 'DraftCraft Engineering Ventures') { throw "publisher is $publisher" }
+          Write-Output "Apps & features: D.E.V. Launcher by $publisher"
           # Running the same installer again repairs in place and keeps the folder.
           Install 'reinstall'
           if ((Get-ItemProperty $key).InstallDir -ne $dir) { throw 'reinstall moved the install folder' }
