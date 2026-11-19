@@ -14,7 +14,7 @@ name: Packages
 
 on:
   push:
-    branches: [draftcraft-launcher]
+    branches: [dev-launcher]
   workflow_dispatch:
 
 permissions:

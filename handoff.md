@@ -4,7 +4,7 @@
 session, 2026-11-19), for DraftCraft Engineering Ventures.
 
 Read this first, then `docs/dev-launcher-plan.md` (the decisions and what each app publishes). The
-repository is `DraftCraft-DEV/launcher`; all work so far is on the branch **`draftcraft-launcher`**.
+repository is `DraftCraft-DEV/launcher`; all work so far is on the branch **`dev-launcher`**.
 There is no `main` yet: create it from this branch once the launcher is reviewed.
 
 ## What it is
@@ -24,7 +24,7 @@ Owner decisions that bind the work:
 - Name **D.E.V. Launcher**; machine names `dev-launcher*`; app id **`dev.draftcraft.Launcher`**
   (Flathub verifies it through draftcraft.dev, whose DNS the owner holds).
 
-## Done (commits on `draftcraft-launcher`)
+## Done (commits on `dev-launcher`)
 
 1. **Plan** (`docs/dev-launcher-plan.md`).
 2. **Catalog** (`crates/core/catalog.toml`): DraftCraft (official) and TraceDraw (community), each

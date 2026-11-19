@@ -116,9 +116,9 @@ text use the system's own font; never bundle one.
 
 ### Branches
 
-`draftcraft-launcher` is the default branch and the main line of D.E.V. Launcher; agents push
+`dev-launcher` is the default branch and the main line of D.E.V. Launcher; agents push
 their work there. `artcraft-launcher` is a record of the ArtCraft Launcher code this project started
-from: never push to it, merge into it or delete it. Every push to `draftcraft-launcher` builds the
+from: never push to it, merge into it or delete it. Every push to `dev-launcher` builds the
 installers and tests each one by installing, checking and uninstalling it, like DraftCraft's own
 (`.github/workflows/packages.yml`; downloads under the run's Artifacts, with `SHA256SUMS.txt`).
 
