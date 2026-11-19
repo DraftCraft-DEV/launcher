@@ -261,7 +261,7 @@ pub fn install_at(
         #[cfg(windows)]
         PackageKind::PortableZip => {
             crate::portable::install(app, &file, &version, previous, job.paths, destination.as_deref(), job.replace, &mut |record| {
-                if release.version.is_some() && crate::detect::windows::executable_version(&record.path).as_ref() != release.version.as_ref() {
+                if exe_version_conflicts(crate::detect::windows::executable_version(&record.path).as_ref(), release.version.as_ref()) {
                     return Err("The portable executable does not match the selected version. The installation was rolled back.".into());
                 }
                 match commit.as_deref_mut() {
@@ -314,6 +314,33 @@ pub fn install_at(
     }
     // The system's own prompt was dismissed: the download itself wasn't cancelled.
     result.map_err(|e| if e == CANCELLED { INSTALL_CANCELLED.to_string() } else { e })
+}
+
+/// Whether an unpacked portable program reports a version other than the release's. A program
+/// that reports none passes: the download was already verified against its checksum, and an exe
+/// built without version information must not roll back a good install.
+#[cfg_attr(not(windows), allow(dead_code))]
+pub(crate) fn exe_version_conflicts(
+    found: Option<&dev_launcher_core::version::Version>,
+    release: Option<&dev_launcher_core::version::Version>,
+) -> bool {
+    matches!((found, release), (Some(found), Some(release)) if found != release)
+}
+
+#[cfg(test)]
+mod exe_version_tests {
+    use super::exe_version_conflicts;
+    use dev_launcher_core::version::parse;
+
+    /// Only a program that reports another version than the release is refused.
+    #[test]
+    fn only_a_different_reported_version_conflicts() {
+        let (v1, v2) = (parse("0.48.0").unwrap(), parse("0.49.0").unwrap());
+        assert!(!exe_version_conflicts(Some(&v1), Some(&v1)));
+        assert!(exe_version_conflicts(Some(&v2), Some(&v1)));
+        assert!(!exe_version_conflicts(None, Some(&v1)), "an exe without version information passes");
+        assert!(!exe_version_conflicts(Some(&v1), None));
+    }
 }
 
 /// Rejects an artifact whose own identity disagrees with the release that authorized it.

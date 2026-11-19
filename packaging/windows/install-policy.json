@@ -2,7 +2,7 @@
   "id": "dev-launcher",
   "name": "D.E.V. Launcher",
   "mode": "perUser",
-  "upgradeCode": "1AC08DBF-D4CF-4BA4-A81E-CAA5C1004974",
+  "upgradeCode": "361C13A2-8462-4862-AEC9-189A1068F7F7",
   "sources": [
     "dev-launcher.wxs"
   ],

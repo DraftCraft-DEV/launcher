@@ -30,7 +30,7 @@
       Name="D.E.V. Launcher"
       Manufacturer="DraftCraft Engineering Ventures"
       Version="$(var.Version)"
-      UpgradeCode="1AC08DBF-D4CF-4BA4-A81E-CAA5C1004974"
+      UpgradeCode="361C13A2-8462-4862-AEC9-189A1068F7F7"
       Scope="perUser"
       Compressed="yes"
       Language="1033">
@@ -152,7 +152,7 @@
 
   <Fragment>
     <ComponentGroup Id="DevLauncherFiles">
-      <Component Id="DevLauncherApp" Directory="INSTALLFOLDER" Guid="55DCC431-EBEF-4C11-BABB-6D78CE0ECF4E">
+      <Component Id="DevLauncherApp" Directory="INSTALLFOLDER" Guid="0066A11B-ACAD-4850-B1DA-F32990E99867">
         <File Id="DevLauncherNotice" Source="$(var.BinDir)\NOTICE" KeyPath="no" />
         <File Id="DevLauncherExe" Source="$(var.BinDir)\dev-launcher.exe" KeyPath="no" />
         <!-- The craft-ai-mcp gateway the launcher ships (Settings › AI agents). Every upgrade is a major
@@ -168,7 +168,7 @@
         <RemoveFolder Id="RemoveLocalProgramsFolder" Directory="LocalProgramsFolder" On="uninstall" />
       </Component>
 
-      <Component Id="DevLauncherShortcut" Directory="ProgramMenuFolder" Guid="870F3DFA-BC0F-497F-85D5-A361B04826AF">
+      <Component Id="DevLauncherShortcut" Directory="ProgramMenuFolder" Guid="2BD5F542-DABA-4F6D-86C7-BC9F55BDA9A4">
         <Shortcut Id="StartMenuShortcut" Name="D.E.V. Launcher"
             Description="Install and update the D.E.V. App Suite"
             Target="[#DevLauncherExe]" WorkingDirectory="INSTALLFOLDER">
@@ -178,7 +178,7 @@
       </Component>
 
       <!-- Only when the folder page's box is ticked; removed on uninstall like everything else. -->
-      <Component Id="DevLauncherDesktopShortcut" Directory="DesktopFolder" Guid="CF06DCF3-BE5A-4A2B-B3BF-F553CC6E5D60"
+      <Component Id="DevLauncherDesktopShortcut" Directory="DesktopFolder" Guid="4E05774B-5997-43DC-AC8D-6FC47A32E277"
           Condition="INSTALLDESKTOPSHORTCUT = &quot;1&quot;">
         <Shortcut Id="DesktopShortcut" Name="D.E.V. Launcher"
             Description="Install and update the D.E.V. App Suite"
