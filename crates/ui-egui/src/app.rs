@@ -894,13 +894,23 @@ impl LauncherUi {
         }
 
         // The bars' separator lines are the hairlines under the header and over the footer.
+        // Where the app draws its own window frame, the window's corners are rounded (the window
+        // is transparent outside them); the header and footer carry the curves.
+        let rounded = crate::theme::window_rounded(&ctx, host.title_bar() == TitleBar::Custom);
+        ctx.data_mut(|d| d.insert_temp(crate::theme::window_rounded_id(), rounded));
+        let wr = if rounded { crate::theme::WINDOW_RADIUS.nw } else { 0 };
         egui::Panel::top("header")
-            .frame(egui::Frame::new().fill(tokens.bg))
+            .frame(egui::Frame::new().fill(tokens.bg).corner_radius(egui::CornerRadius { nw: wr, ne: wr, sw: 0, se: 0 }))
             .exact_size(crate::views::HEADER_H)
             .resizable(false)
             .show(ui, |ui| self.header(ui, host.title_bar()));
         egui::Panel::bottom("footer")
-            .frame(egui::Frame::new().fill(tokens.bg).inner_margin(egui::Margin::symmetric(20, 0)))
+            .frame(
+                egui::Frame::new()
+                    .fill(tokens.bg)
+                    .corner_radius(egui::CornerRadius { nw: 0, ne: 0, sw: wr, se: wr })
+                    .inner_margin(egui::Margin::symmetric(20, 0)),
+            )
             .exact_size(crate::views::FOOTER_H)
             .resizable(false)
             .show(ui, |ui| self.footer(ui));

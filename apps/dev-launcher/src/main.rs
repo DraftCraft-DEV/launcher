@@ -197,7 +197,8 @@ fn native_options(hidden: bool, backends: Option<eframe::wgpu::Backends>) -> efr
     viewport = if cfg!(target_os = "macos") {
         viewport.with_fullsize_content_view(true).with_titlebar_shown(false).with_title_shown(false)
     } else {
-        viewport.with_decorations(false)
+        // Transparent, so the corners outside the app's rounded frame show what is behind.
+        viewport.with_decorations(false).with_transparent(true)
     };
     // On macOS the bundle's .icns is the icon. Any icon given to eframe (its egui logo when none
     // is) replaces it in the Dock at runtime with a raw bitmap, which skips the system's icon
@@ -1053,6 +1054,10 @@ impl eframe::App for Shell<'_> {
     }
 
     fn clear_color(&self, visuals: &egui::Visuals) -> [f32; 4] {
+        // Windows and Linux: the window is transparent, and the app paints its rounded frame.
+        if !cfg!(target_os = "macos") {
+            return egui::Color32::TRANSPARENT.to_normalized_gamma_f32();
+        }
         (if visuals.dark_mode { Tokens::DARK.bg } else { Tokens::LIGHT.bg }).to_normalized_gamma_f32()
     }
 }

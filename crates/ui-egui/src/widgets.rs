@@ -146,7 +146,7 @@ pub fn nav_icon(ui: &mut Ui, glyph: Glyph, tip: &str, height: f32, busy: bool) -
     let p = ui.painter();
     let hovered = resp.hovered() && !busy;
     if hovered {
-        p.rect_filled(rect, CornerRadius::ZERO, t.invert_bg);
+        p.rect_filled(rect, theme::cell_radius(ui.ctx(), rect), t.invert_bg);
     }
     p.vline(rect.left() + 0.5, rect.y_range(), t.hairline());
     if busy {
@@ -315,7 +315,7 @@ fn window_button(ui: &mut Ui, button: WindowButton, height: f32, sense: Sense) -
         (_, false) => (Color32::TRANSPARENT, t.muted),
     };
     let p = ui.painter();
-    p.rect_filled(rect, CornerRadius::ZERO, fill);
+    p.rect_filled(rect, theme::cell_radius(ui.ctx(), rect), fill);
     let c = rect.center();
     let stroke = Stroke::new(1.0, ink);
     let label = match button {
@@ -331,12 +331,12 @@ fn window_button(ui: &mut Ui, button: WindowButton, height: f32, sense: Sense) -
             p.hline(c.x - s..=c.x + s, c.y, stroke);
         }
         WindowButton::Maximize => {
-            p.rect_stroke(Rect::from_center_size(c, vec2(2.0 * s, 2.0 * s)), CornerRadius::ZERO, stroke, egui::StrokeKind::Inside);
+            p.rect_stroke(Rect::from_center_size(c, vec2(2.0 * s, 2.0 * s)), CornerRadius::same(2), stroke, egui::StrokeKind::Inside);
         }
         WindowButton::Restore => {
             // A window in front of another.
             let front = Rect::from_min_size(c + vec2(-s, -s + 2.0), vec2(2.0 * s - 2.0, 2.0 * s - 2.0));
-            p.rect_stroke(front, CornerRadius::ZERO, stroke, egui::StrokeKind::Inside);
+            p.rect_stroke(front, CornerRadius::same(2), stroke, egui::StrokeKind::Inside);
             p.hline(c.x - s + 2.0..=c.x + s, c.y - s, stroke);
             p.vline(c.x + s, c.y - s..=c.y + s - 2.0, stroke);
         }
@@ -361,7 +361,7 @@ pub fn window_edges(ctx: &egui::Context) {
     let r = ctx.content_rect();
     ctx.layer_painter(egui::LayerId::new(egui::Order::Foreground, egui::Id::unique("window-border"))).rect_stroke(
         r,
-        CornerRadius::ZERO,
+        theme::WINDOW_RADIUS,
         t.hairline(),
         egui::StrokeKind::Inside,
     );
@@ -711,7 +711,7 @@ pub fn progress(ui: &mut Ui, fraction: Option<f32>, caption: &str, color: Color3
             for left in [x, x - width] {
                 let seg = Rect::from_min_size(egui::pos2(bar.left() + left, bar.top()), vec2(segment_width, bar.height())).intersect(bar);
                 if seg.is_positive() {
-                    p.rect_filled(seg, CornerRadius::ZERO, color);
+                    p.rect_filled(seg, theme::RADIUS, color);
                 }
             }
             ui.ctx().request_repaint();
@@ -766,7 +766,7 @@ fn glyph_shapes(rect: Rect, glyph: Glyph, color: Color32) -> Vec<egui::Shape> {
     match glyph {
         Glyph::Pause => [-3.0, 3.0]
             .into_iter()
-            .map(|dx| egui::Shape::rect_filled(Rect::from_center_size(m + vec2(dx, 0.0), vec2(2.5, 10.0)), CornerRadius::ZERO, color))
+            .map(|dx| egui::Shape::rect_filled(Rect::from_center_size(m + vec2(dx, 0.0), vec2(2.5, 10.0)), CornerRadius::same(1), color))
             .collect(),
         Glyph::Close => {
             let s = 4.5;
@@ -810,7 +810,7 @@ fn glyph_shapes(rect: Rect, glyph: Glyph, color: Color32) -> Vec<egui::Shape> {
                 ),
                 egui::Shape::rect_stroke(
                     Rect::from_min_max(m + vec2(-5.0, -1.0), m + vec2(5.0, 6.0)),
-                    CornerRadius::ZERO,
+                    CornerRadius::same(2),
                     stroke,
                     egui::StrokeKind::Inside,
                 ),

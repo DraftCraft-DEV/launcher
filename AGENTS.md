@@ -81,7 +81,8 @@ settings file must produce an error the user can act on, never a panic.
 ### Look and feel
 
 Soft rounded corners (`theme::RADIUS`, 6 px, for buttons, inputs, chips and menus;
-`theme::CARD_RADIUS`, 10 px, for cards, dialogs and panels; cards stand apart with a gap), 1 px
+`theme::CARD_RADIUS`, 10 px, for cards, dialogs and panels; cards stand apart with a gap; the window itself, `theme::WINDOW_RADIUS`, where the app draws its
+frame and the window is not maximized; nothing is square), 1 px
 hairlines instead of shadows, Archivo for headings and app names, Inter
 for body text, upper-case Geist Mono labels and buttons, colours from `theme::Tokens` by name.
 The app list sits on a blueprint (`backdrop.rs`: DraftCraft's blueprint blues, a drafting grid that

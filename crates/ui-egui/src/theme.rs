@@ -238,6 +238,33 @@ pub const RADIUS: CornerRadius = CornerRadius::same(6);
 /// Corner radius of cards, dialogs and panels.
 pub const CARD_RADIUS: CornerRadius = CornerRadius::same(10);
 
+/// Corner radius of the window itself, where the app draws its own frame (not when maximized).
+pub const WINDOW_RADIUS: CornerRadius = CornerRadius::same(10);
+
+/// Where the frame records, each frame, whether the window's corners are rounded.
+pub(crate) fn window_rounded_id() -> egui::Id {
+    egui::Id::unique("dev-window-rounded")
+}
+
+/// Whether the window's own corners are rounded now: the app draws the frame (`custom`), and
+/// the window is neither maximized nor full screen.
+pub fn window_rounded(ctx: &egui::Context, custom: bool) -> bool {
+    custom && !ctx.input(|i| i.viewport().maximized.unwrap_or(false) || i.viewport().fullscreen.unwrap_or(false))
+}
+
+/// [`RADIUS`] for a cell, but with the window's radius on any corner that sits in a rounded
+/// window corner, so a hover fill there follows the window's curve.
+pub fn cell_radius(ctx: &egui::Context, rect: egui::Rect) -> CornerRadius {
+    let screen = ctx.content_rect();
+    let rounded = ctx.data(|d| d.get_temp::<bool>(window_rounded_id())).unwrap_or(false);
+    let w = WINDOW_RADIUS.nw;
+    let r = RADIUS.nw;
+    let (top, bottom) = (rect.top() <= screen.top() + 1.0, rect.bottom() >= screen.bottom() - 1.0);
+    let (left, right) = (rect.left() <= screen.left() + 1.0, rect.right() >= screen.right() - 1.0);
+    let pick = |a: bool, b: bool| if rounded && a && b { w } else { r };
+    CornerRadius { nw: pick(top, left), ne: pick(top, right), sw: pick(bottom, left), se: pick(bottom, right) }
+}
+
 /// Rounds only the top corners, for a band along the top of a rounded box.
 pub const fn top_radius(r: CornerRadius) -> CornerRadius {
     CornerRadius { nw: r.nw, ne: r.ne, sw: 0, se: 0 }

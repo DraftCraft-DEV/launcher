@@ -34,12 +34,12 @@ pub fn view_toggle(ui: &mut Ui, view: &mut ViewMode, tips: [&str; 2]) {
             match mode {
                 ViewMode::Grid => {
                     for (dx, dy) in [(-1.0, -1.0), (1.0, -1.0), (-1.0, 1.0), (1.0, 1.0)] {
-                        p.rect_filled(Rect::from_center_size(c + vec2(dx * 3.75, dy * 3.75), vec2(6.0, 6.0)), CornerRadius::ZERO, ink);
+                        p.rect_filled(Rect::from_center_size(c + vec2(dx * 3.75, dy * 3.75), vec2(6.0, 6.0)), CornerRadius::same(2), ink);
                     }
                 }
                 ViewMode::Table => {
                     for dy in [-5.0, 0.0, 5.0] {
-                        p.rect_filled(Rect::from_center_size(c + vec2(0.0, dy), vec2(15.0, 2.5)), CornerRadius::ZERO, ink);
+                        p.rect_filled(Rect::from_center_size(c + vec2(0.0, dy), vec2(15.0, 2.5)), CornerRadius::same(1), ink);
                     }
                 }
             }
