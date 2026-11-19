@@ -59,9 +59,9 @@ pub fn social(service: &str) -> Option<ImageSource<'static>> {
     })
 }
 
-/// The D.E.V. Launcher mark (`assets/brand/dev-launcher-mark.svg`): the launcher's app icon.
+/// The D.E.V. avatar (`assets/brand/dev-avatar.svg`): the launcher's app icon.
 pub fn dev_mark() -> ImageSource<'static> {
-    egui::include_image!("../../../assets/brand/dev-launcher-mark.svg")
+    egui::include_image!("../../../assets/brand/dev-avatar.svg")
 }
 
 #[cfg(test)]

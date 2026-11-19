@@ -46,9 +46,11 @@ Owner decisions that bind the work:
      Migrating those tests to neutral fixture apps is a nice-to-have, not required.
 3. **Rebrand** to D.E.V. Launcher: names, app id, User-Agent `DEV-Launcher/<version>`, Windows
    settings under `DraftCraft Engineering Ventures`, self-update from `DraftCraft-DEV/launcher`,
-   links (draftcraft.dev, github.com/DraftCraft-DEV, DraftCraft's Discord), its own mark
-   (`assets/brand/dev-launcher-mark.svg`; every icon rendered from it by `packaging/icons.sh`, which
-   needs `resvg`). ArtCraft's logos, marks and screenshots are deleted. The craft-ai-mcp gateway,
+   links (draftcraft.dev, github.com/DraftCraft-DEV, DraftCraft's Discord), and the **official
+   D.E.V. brand** supplied by DraftCraft Engineering Ventures in `assets/brand/` (avatar, mark in
+   dark, light and mono, logos, wordmarks; SVG and PNG; use as supplied, never redraw). Every app and
+   tray icon is rendered from `dev-avatar.svg` and `dev-mark-mono.svg` by `packaging/icons.sh`
+   (needs `resvg`). ArtCraft's logos, marks and screenshots are deleted. The craft-ai-mcp gateway,
    Settings › AI agents and the ArtCraft OCI Flatpak helpers are removed.
 4. **Translations:** ArtCraft strings swapped for DraftCraft's in every catalog; DraftCraft's and
    TraceDraw's taglines added in all 13 complete languages; ArtCraft apps' rows removed.
@@ -90,11 +92,13 @@ Owner decisions that bind the work:
      elevation; this repo's own approved-app rule naming DraftCraft and TraceDraw; drop ArtCraft's
      house rules);
    - `NOTICE` (keep ArtCraft Launcher's copyright and licence; add DraftCraft Engineering Ventures);
-   - `ATTRIBUTION.md` (rows for `assets/brand/*`, `assets/app-icon/*` (our mark), `assets/app-icons/draftcraft.png`
+   - `ATTRIBUTION.md` (rows for `assets/brand/*` (the D.E.V. brand: DraftCraft Engineering
+     Ventures' trademark artwork, not MIT/Apache), `assets/app-icon/*` (rendered from it), `assets/app-icons/draftcraft.png`
      (from DraftCraft-DEV/DraftCraft, the DraftCraft trademark of DraftCraft Engineering Ventures)
      and `tracedraw.png` (from tracedraw/tracedraw at 0fdff91, MIT OR Apache-2.0); remove rows of
      deleted files);
-   - `docs/brand/LICENSE-brand.txt` for the D.E.V. mark;
+   - `assets/brand/LICENSE-brand.txt`: terms for the D.E.V. name, mark and logos (owner:
+     DraftCraft Engineering Ventures), like DraftCraft's `docs/brand/LICENSE-brand.txt`;
    - `assets/app-icon/README.md` and `LICENSE.txt`.
 5. **Packaging:**
    - **WiX:** give `packaging/windows/dev-launcher.wxs` a **new `UpgradeCode`** (and new component
@@ -107,8 +111,14 @@ Owner decisions that bind the work:
 6. **CI and releases:** the workflows call `storytold/craft-common-actions`; check they run for
    `DraftCraft-DEV/launcher` (secrets, signing). The release workflow publishes
    `dev-launcher-<ver>-…` assets and `SHA256SUMS.txt`, which the self-update reads.
-7. **Look at it:** `cargo run -p dev-launcher`, screenshot both themes, check the header (mark +
-   "D.E.V. LAUNCHER"), the two cards, Settings and About.
+7. **Look at it:** `cargo run -p dev-launcher`, screenshot both themes, check the header, the two
+   cards, Settings and About.
+   - **Header:** it draws the avatar and "D.E.V. LAUNCHER" in the display font. Consider the
+     official lockup instead: `dev-wordmark.svg` on light, `dev-wordmark-dark.svg` on dark, or the
+     mark alone (`dev-mark.svg` / `dev-mark-dark.svg`).
+   - **Icon detail for the owner's designer:** the avatar is a square tile, while macOS icons are
+     usually rounded; and at 16–32 px the hexagons are small in the tile, so a tighter crop for the
+     small sizes would read better.
 8. **Live check:** install DraftCraft and TraceDraw on Windows (portable zip), Linux (AppImage) and
    macOS (opened if present; not installed until their DMGs carry a Developer ID, by design).
 

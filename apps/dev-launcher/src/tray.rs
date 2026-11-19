@@ -27,12 +27,12 @@ pub struct Tray {
 }
 
 fn load_icon() -> Result<tray_icon::Icon, String> {
-    // The D.E.V. Launcher mark (assets/brand/). macOS tints the black glyph to the menu bar's
-    // colours as a template image; elsewhere the full mark is shown.
+    // The D.E.V. mark (assets/brand/, rendered by packaging/icons.sh). macOS tints the black mark
+    // to the menu bar's colours as a template image; elsewhere the avatar is shown.
     let bytes: &[u8] = if cfg!(target_os = "macos") {
-        include_bytes!("../../../assets/brand/dev-launcher-glyph-black-44.png")
+        include_bytes!("../../../assets/app-icon/tray-mono-44.png")
     } else {
-        include_bytes!("../../../assets/brand/dev-launcher-mark-64.png")
+        include_bytes!("../../../assets/app-icon/tray-64.png")
     };
     let img = image::load_from_memory_with_format(bytes, image::ImageFormat::Png).map_err(|e| e.to_string())?.into_rgba8();
     let (w, h) = img.dimensions();

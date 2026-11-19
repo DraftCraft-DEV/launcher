@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
-# Regenerate every app and tray icon from the D.E.V. Launcher mark in assets/brand/.
+# Regenerate every app and tray icon from the D.E.V. brand in assets/brand/ (DraftCraft Engineering
+# Ventures' own artwork, as supplied: never edit the SVGs here).
 #
-# - App icon (Dock, taskbar, Start menu, Linux menus, installers): assets/brand/dev-launcher-mark.svg.
-# - Tray: the glyph in black as the macOS menu-bar template; the full mark on Windows, Linux and BSD.
+# - App icon (Dock, taskbar, Start menu, Linux menus, installers): assets/brand/dev-avatar.svg.
+# - Tray: dev-mark-mono.svg (black) as the macOS menu-bar template; the avatar on Windows, Linux and BSD.
 #
 # Needs: resvg (brew install resvg / cargo install resvg). The .ico and .icns are packed by
 # `cargo xtask ico` / `cargo xtask icns`, so this runs on any OS. The outputs are committed, so
@@ -13,16 +14,16 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DIR="$ROOT/assets/app-icon"
 BRAND="$ROOT/assets/brand"
-SVG="$BRAND/dev-launcher-mark.svg"
+SVG="$BRAND/dev-avatar.svg"
 ID="dev.draftcraft.Launcher"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 command -v resvg >/dev/null || { echo "error: resvg not found (cargo install resvg)" >&2; exit 1; }
 # macOS icons get Apple's transparent margin (the 824/1024 icon grid) by widening the view box.
-BOX='viewBox="0 0 128 128"'
+BOX='viewBox="0 0 400 400"'
 grep -q "$BOX" "$SVG" || { echo "error: expected $BOX in $SVG" >&2; exit 1; }
 MAC="$TMP/mac.svg"
-sed "s/$BOX/viewBox=\"-15.53 -15.53 159.06 159.06\"/" "$SVG" >"$MAC"
+sed "s/$BOX/viewBox=\"-48.54 -48.54 497.08 497.08\"/" "$SVG" >"$MAC"
 render() {
   local src="$1" size="$2" out="$3"
   resvg -w "$size" -h "$size" "$src" "$out" </dev/null
@@ -52,5 +53,5 @@ done
 (cd "$ROOT" && cargo run -q -p xtask -- icns "$DIR/dev-launcher.icns" "${ICNS_PNGS[@]}")
 # Tray icons: the black glyph is the macOS menu-bar template (44 px = 22 pt @2x; macOS tints it);
 # the full mark is for the Windows notification area and Linux/BSD status notifiers.
-render "$BRAND/dev-launcher-glyph-black.svg" 44 "$BRAND/dev-launcher-glyph-black-44.png"
-render "$SVG" 64 "$BRAND/dev-launcher-mark-64.png"
+render "$BRAND/dev-mark-mono.svg" 44 "$DIR/tray-mono-44.png"
+render "$SVG" 64 "$DIR/tray-64.png"

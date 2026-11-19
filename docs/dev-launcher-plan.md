@@ -8,7 +8,7 @@ launcher is done and `README.md` and `AGENTS.md` describe it.
 ## Decisions (owner, 2026-11-19)
 
 - **Name:** D.E.V. Launcher (DraftCraft™ Engineering Ventures). Machine names `dev-launcher`,
-  `dev-launcher-*`. Its own icon, drawn for it: not DraftCraft's compass, which is DraftCraft's.
+  `dev-launcher-*`. Its icon is the official D.E.V. brand (`assets/brand/`), not DraftCraft's compass, which is DraftCraft's.
 - **App id:** `dev.draftcraft.Launcher` (reverse DNS of draftcraft.dev, which the owner controls).
 - **Marks:** DraftCraft™ is a trademark of DraftCraft Engineering Ventures, whose launcher this is;
   DraftCraft's app icon shows on DraftCraft's card. ArtCraft's name, logo and "A" mark are ArtCraft's
