@@ -272,7 +272,10 @@ impl NativeBackend {
             pictures_busy: Mutex::new(std::collections::HashSet::new()),
             last_check: Mutex::new(None),
         });
-        let pins = craft_update::pins::Pins::default_path();
+        // Pinned versions live in the launcher's own data folder. craft-update's default path is
+        // `ArtCraft/versions/versions.json`, which ArtCraft Launcher writes too: sharing it would let
+        // the two launchers overwrite each other's choices, and no app here reads it.
+        let pins = Some(paths.data.join("versions").join("versions.json"));
         if let Some(path) = &pins {
             crate::pins::prepare_folder(path);
         }

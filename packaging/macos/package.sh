@@ -18,8 +18,6 @@ HERE="$ROOT/packaging/macos"
 
 # ---- app-specific values ----------------------------------------------------------------------
 PKG=dev-launcher          # cargo package and binary
-GATEWAY_PKG=dev-launcher-mcp # cargo package of the craft-ai-mcp gateway the launcher ships
-GATEWAY_BIN=craft-ai-mcp         # its binary, placed beside the launcher in Contents/MacOS
 APP_NAME="D.E.V. Launcher"   # display name: bundle, executable, icon, DMG volume
 
 ARCH=universal
@@ -62,8 +60,7 @@ echo "==> $APP_NAME $VERSION for macOS ($ARCH), identity: $IDENTITY, notarize: $
 if [[ "$SKIP_BUILD" = 0 ]]; then
   args=()
   for t in "${TARGETS[@]}"; do args+=(--target "$t"); done
-  # The launcher and the craft-ai-mcp gateway it ships (Settings › AI agents).
-  (cd "$ROOT" && cargo build --release --locked -p "$PKG" -p "$GATEWAY_PKG" "${args[@]}")
+  (cd "$ROOT" && cargo build --release --locked -p "$PKG" "${args[@]}")
 fi
 
 rm -rf "$WORK"
@@ -72,10 +69,6 @@ inputs=()
 for t in "${TARGETS[@]}"; do inputs+=("$CARGO_TARGET_DIR/$t/release/$PKG"); done
 lipo -create -output "$WORK/bin/$PKG" "${inputs[@]}"
 lipo -info "$WORK/bin/$PKG"
-gw_inputs=()
-for t in "${TARGETS[@]}"; do gw_inputs+=("$CARGO_TARGET_DIR/$t/release/$GATEWAY_BIN"); done
-lipo -create -output "$WORK/bin/$GATEWAY_BIN" "${gw_inputs[@]}"
-lipo -info "$WORK/bin/$GATEWAY_BIN"
 
 # ---- signing helpers ---------------------------------------------------------------------------
 sign() {
@@ -125,7 +118,6 @@ mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 # Executable and icon carry the display name (CFBundleExecutable / CFBundleIconFile).
 cp "$WORK/bin/$PKG" "$APP/Contents/MacOS/$APP_NAME"
 # Beside the launcher, where Settings › AI agents looks for it (agents::locate_gateway).
-cp "$WORK/bin/$GATEWAY_BIN" "$APP/Contents/MacOS/$GATEWAY_BIN"
 cp "$ROOT/assets/app-icon/$PKG.icns" "$APP/Contents/Resources/$APP_NAME.icns"
 cp "$ROOT/NOTICE" "$APP/Contents/Resources/"
 sed -e "s/@VERSION@/$VERSION/g" -e "s/@SHORT_VERSION@/$SHORT_VERSION/g" \
@@ -143,9 +135,7 @@ printf 'APPL????' >"$APP/Contents/PkgInfo"
 xattr -cr "$APP"
 
 # Sign inside-out: nested code first, then the bundle itself (no --deep on the final signature).
-# Nested code: the craft-ai-mcp gateway (a command-line helper, no entitlements) and the main
-# executable; frameworks/helpers would be signed here too.
-sign --options runtime "$APP/Contents/MacOS/$GATEWAY_BIN"
+# Nested code: the main executable; frameworks/helpers would be signed here too.
 sign --options runtime --entitlements "$HERE/entitlements.plist" "$APP/Contents/MacOS/$APP_NAME"
 sign --options runtime --entitlements "$HERE/entitlements.plist" "$APP"
 codesign --verify --strict --deep --verbose=2 "$APP"

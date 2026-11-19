@@ -52,16 +52,11 @@ finish-args:
   # reads the sandbox's own config folder. This grant exposes that folder at its host path, also
   # when $XDG_CONFIG_HOME sits outside home, and :create makes it on a fresh account. Keep it.
   - --filesystem=xdg-config/autostart:create
-  # The version each app should follow (craft_update::pins), in a host folder of its own so the
-  # Craft apps' Flatpaks can be granted read access to it alone. Usually inside home, but
-  # $XDG_DATA_HOME may sit elsewhere; :create also makes the folder, so an app's grant mounts it.
-  - --filesystem=xdg-data/ArtCraft/versions:create
 modules:
   - name: dev-launcher
     buildsystem: simple
     build-commands:
       - install -Dm755 bin/dev-launcher /app/bin/dev-launcher
-      - install -Dm755 bin/craft-ai-mcp /app/bin/craft-ai-mcp
       - install -Dm644 share/applications/dev.draftcraft.Launcher.desktop /app/share/applications/dev.draftcraft.Launcher.desktop
       # Already has the release's version and date substituted by package.sh.
       - install -Dm644 share/metainfo/dev.draftcraft.Launcher.metainfo.xml /app/share/metainfo/dev.draftcraft.Launcher.metainfo.xml

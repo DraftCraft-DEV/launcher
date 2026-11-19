@@ -16,9 +16,6 @@ check_packages() {
   mkdir -p "$work/target/$target/release"
   printf '#!/bin/sh\necho "D.E.V. Launcher packaging fixture"\n' >"$work/target/$target/release/dev-launcher"
   chmod +x "$work/target/$target/release/dev-launcher"
-  # The packages ship the craft-ai-mcp gateway beside the launcher (Settings › AI agents).
-  printf '#!/bin/sh\necho "craft-ai-mcp packaging fixture"\n' >"$work/target/$target/release/craft-ai-mcp"
-  chmod +x "$work/target/$target/release/craft-ai-mcp"
   # A set cross target skips the version smoke execution; no target binary is run.
   (
     unset EMULATOR

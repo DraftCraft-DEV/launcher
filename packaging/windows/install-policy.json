@@ -16,8 +16,7 @@
   ],
   "payloads": [
     "NOTICE",
-    "dev-launcher.exe",
-    "craft-ai-mcp.exe"
+    "dev-launcher.exe"
   ],
   "registry": [
     [
