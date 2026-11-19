@@ -4318,7 +4318,7 @@ fn an_occupied_folder_asks_before_replacing_it() {
 }
 
 #[test]
-fn a_not_installed_card_is_grey_until_the_pointer_is_over_it() {
+fn a_not_installed_card_is_in_full_colour() {
     let (mut h, _) = harness(ViewMode::Grid, egui::Theme::Dark, true);
     h.set_size(egui::vec2(1180.0, 1100.0));
     h.run_steps(8);
@@ -4336,10 +4336,9 @@ fn a_not_installed_card_is_grey_until_the_pointer_is_over_it() {
         }
         most
     };
-    assert!(colour(&mut h) <= 8, "a not installed app's icon is grey");
-    h.hover_at(egui::pos2(icon.center().x + 120.0, icon.center().y + 60.0));
-    // The colour picture decodes on a background thread: give it real time, as a slow machine
-    // (CI's Windows runner) needs more than a few frames.
+    // The picture decodes on a background thread: give it real time, as a slow machine (CI's
+    // Windows runner) needs more than a few frames. The pointer stays away from the card.
+    h.hover_at(egui::pos2(5.0, 400.0));
     let mut shown = 0;
     for _ in 0..100 {
         h.run_steps(2);
@@ -4349,10 +4348,7 @@ fn a_not_installed_card_is_grey_until_the_pointer_is_over_it() {
         }
         std::thread::sleep(std::time::Duration::from_millis(20));
     }
-    assert!(shown > 40, "the icon shows its colour under the pointer");
-    h.hover_at(egui::pos2(5.0, 400.0));
-    h.run_steps(8);
-    assert!(colour(&mut h) <= 8, "the colour goes again when the pointer leaves");
+    assert!(shown > 40, "a not installed app's icon is in colour without hovering ({shown})");
 }
 
 #[test]

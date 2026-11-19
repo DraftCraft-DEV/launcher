@@ -37,8 +37,8 @@ struct Palette {
 fn palette(t: &Tokens) -> Palette {
     if t.dark {
         Palette {
-            light: Color32::from_rgb(0x16, 0x4a, 0x86),
-            dark: Color32::from_rgb(0x08, 0x1d, 0x38),
+            light: Color32::from_rgb(0x0e, 0x34, 0x63),
+            dark: Color32::from_rgb(0x04, 0x0e, 0x1d),
             minor: Color32::from_rgba_unmultiplied(0x9c, 0xc3, 0xff, 26),
             major: Color32::from_rgba_unmultiplied(0x9c, 0xc3, 0xff, 56),
         }
@@ -69,8 +69,7 @@ pub(crate) fn paint(ctx: &egui::Context, painter: &Painter, rect: Rect, t: &Toke
             let (u, v) = (col as f32 / MESH_COLS as f32, row as f32 / MESH_ROWS as f32);
             // 0 at one corner, 1 at the opposite one; one full light-dark-light cycle across.
             let along = (u + v) / 2.0 - phase;
-            // Cubed, so the light part is a narrow band and the window stays mostly dark.
-            let k = (0.5 + 0.5 * (along * std::f32::consts::TAU).cos()).powi(3);
+            let k = 0.5 + 0.5 * (along * std::f32::consts::TAU).cos();
             let pos = pos2(rect.left() + u * rect.width(), rect.top() + v * rect.height());
             mesh.colored_vertex(pos, p.dark.lerp_to_gamma(p.light, k));
         }

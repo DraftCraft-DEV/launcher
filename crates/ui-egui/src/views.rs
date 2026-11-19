@@ -569,12 +569,9 @@ impl LauncherUi {
         let hovered = ui.rect_contains_pointer(rect);
         let wipe = if self.reduce_motion { 0.0 } else { 0.3 };
         let lift = ui.ctx().animate_bool_with_time(ui.scope_id().with(("card-hover", id)), hovered, wipe);
-        // An app that is not installed is drawn in greys (icon, name, version, accent), and in its
-        // colours while the pointer is over its card.
-        let installed = entry.status(self.platform, self.caps.manage_apps).is_installed();
-        let in_colour = installed || hovered;
-        // The text and accent use the theme's muted grey; the icon is a grey copy of itself.
-        let app_color = if installed { rgb(app.color) } else { t.muted.lerp_to_gamma(rgb(app.color), lift) };
+        // Every app is drawn in its own colours, installed or not.
+        let in_colour = true;
+        let app_color = rgb(app.color);
         // The whole card opens the app's page. Added before the card's own links and buttons, so
         // they sit on top of it and keep their clicks.
         if AppDetails::by_id(id).is_some() {
@@ -896,8 +893,8 @@ impl LauncherUi {
                 self.detail = Some(id.to_string());
             }
         }
-        let installed = entry.status(self.platform, self.caps.manage_apps).is_installed();
-        if let Some(icon) = crate::icons::app_image(ui.ctx(), entry.app.id, installed) {
+        // In its own colours, installed or not.
+        if let Some(icon) = crate::icons::app_image(ui.ctx(), entry.app.id, true) {
             // Decorative: the wordmark beside it carries the app name.
             ui.add(icon.fit_to_exact_size(vec2(38.0, 38.0)));
         }
@@ -908,7 +905,7 @@ impl LauncherUi {
             // Name and tagline as one block, centred on the icon.
             let block = title_h + GAP + tagline_h;
             ui.add_space(((ui.available_height() - block) / 2.0).max(0.0));
-            widgets::wordmark_in(ui, entry.app, TITLE_SIZE, installed);
+            widgets::wordmark_in(ui, entry.app, TITLE_SIZE, true);
             ui.add(egui::Label::new(RichText::new(tr_ctx(current(), entry.app.id, entry.app.tagline)).size(TAGLINE_SIZE).color(t.muted)).truncate());
         });
     }
