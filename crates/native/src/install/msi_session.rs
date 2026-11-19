@@ -130,7 +130,7 @@ fn sibling(manifest: &Path, extension: &str) -> PathBuf {
 /// installing one by one.
 #[cfg(windows)]
 pub(super) fn call(_command: &[OsString], targets: &[OsString]) -> Vec<Result<(), String>> {
-    use artcraft_launcher_core::protocol::CANCELLED;
+    use dev_launcher_core::protocol::CANCELLED;
 
     let (mut outcomes, joined, mut held) = join(targets, &signed_by_this_launcher);
     let Some((_, first)) = joined.first() else {
@@ -312,7 +312,7 @@ fn ask_once(dir: &Path, manifest: &Path, apps: usize) -> Prompt {
     use winsafe::ShellExecuteEx;
     use winsafe::co;
 
-    let exe = std::env::current_exe().unwrap_or_else(|_| PathBuf::from("artcraft-launcher.exe"));
+    let exe = std::env::current_exe().unwrap_or_else(|_| PathBuf::from("dev-launcher.exe"));
     let (Some(exe), Some(manifest), Some(dir)) = (super::msi_batch::text(&exe).ok(), super::msi_batch::text(manifest).ok(), dir.to_str()) else {
         return Prompt::Failed("unusual characters in a path".into());
     };

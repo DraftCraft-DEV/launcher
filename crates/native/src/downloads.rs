@@ -34,7 +34,7 @@ impl State {
     /// the suite. `id` breaks ties, so the first to ask goes first.
     fn rank(&self, app: &str, id: u64) -> (usize, usize, u64) {
         let on_screen = self.order.iter().position(|a| a == app).unwrap_or(usize::MAX);
-        let in_suite = artcraft_launcher_core::hosted_catalog::apps().iter().position(|a| a.id == app).unwrap_or(usize::MAX);
+        let in_suite = dev_launcher_core::hosted_catalog::apps().iter().position(|a| a.id == app).unwrap_or(usize::MAX);
         (on_screen, in_suite, id)
     }
 
@@ -200,7 +200,7 @@ mod tests {
         let queue = Downloads::new();
         let (inside, most) = (AtomicUsize::new(0), AtomicUsize::new(0));
         std::thread::scope(|scope| {
-            for (i, app) in artcraft_launcher_core::hosted_catalog::apps().iter().enumerate() {
+            for (i, app) in dev_launcher_core::hosted_catalog::apps().iter().enumerate() {
                 let (queue, inside, most) = (&queue, &inside, &most);
                 scope.spawn(move || {
                     std::thread::sleep(Duration::from_millis(i as u64 % 4));
@@ -221,7 +221,7 @@ mod tests {
         queue.set_limit(3);
         let (inside, most) = (AtomicUsize::new(0), AtomicUsize::new(0));
         std::thread::scope(|scope| {
-            for (i, app) in artcraft_launcher_core::hosted_catalog::apps().iter().enumerate() {
+            for (i, app) in dev_launcher_core::hosted_catalog::apps().iter().enumerate() {
                 let (queue, inside, most) = (&queue, &inside, &most);
                 scope.spawn(move || {
                     std::thread::sleep(Duration::from_millis(i as u64 % 4));
@@ -282,8 +282,8 @@ mod tests {
     fn with_no_limit_every_download_runs_at_once() {
         let queue = Downloads::new();
         queue.set_limit(0);
-        let turns: Vec<_> = artcraft_launcher_core::hosted_catalog::apps().iter().map(|app| queue.turn(app.id, &GO, &mut || panic!("{} should not wait", app.id)).unwrap()).collect();
-        assert_eq!(queue.lock().running, artcraft_launcher_core::hosted_catalog::apps().len());
+        let turns: Vec<_> = dev_launcher_core::hosted_catalog::apps().iter().map(|app| queue.turn(app.id, &GO, &mut || panic!("{} should not wait", app.id)).unwrap()).collect();
+        assert_eq!(queue.lock().running, dev_launcher_core::hosted_catalog::apps().len());
         drop(turns);
     }
 
@@ -314,7 +314,7 @@ mod tests {
     fn waiting_downloads_go_in_suite_order_without_a_screen_order() {
         let queue = Downloads::new();
         let mut in_suite = ["soundcraft", "wordcraft", "lightcraft"];
-        in_suite.sort_by_key(|app| artcraft_launcher_core::hosted_catalog::apps().iter().position(|a| a.id == *app));
+        in_suite.sort_by_key(|app| dev_launcher_core::hosted_catalog::apps().iter().position(|a| a.id == *app));
         assert_eq!(finishing_order(&queue, &["soundcraft", "wordcraft", "lightcraft"], || {}), in_suite);
     }
 

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- D.E.V. Launcher mark: a bold D with a launch arrow through it, on a blueprint tile with a
+       drafting grid. Original work for DraftCraft Engineering Ventures (assets/brand/README.md). -->
+  <rect width="128" height="128" rx="26" fill="#1f5faf"/>
+  <g stroke="#ffffff" stroke-opacity="0.14" stroke-width="1">
+    <path d="M16 0V128M32 0V128M48 0V128M64 0V128M80 0V128M96 0V128M112 0V128"/>
+    <path d="M0 16H128M0 32H128M0 48H128M0 64H128M0 80H128M0 96H128M0 112H128"/>
+  </g>
+  <path fill="#ffffff" fill-rule="evenodd" d="M31 28H61A36 36 0 0 1 61 100H31Z M50 46L78 64L50 82Z"/>
+</svg>

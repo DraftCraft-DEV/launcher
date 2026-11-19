@@ -8,28 +8,28 @@ set -euo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "$HERE/../.." && pwd)"
-APP_ID=ai.storyteller.artcraft-launcher
+APP_ID=dev.draftcraft.Launcher
 
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
 # Fake AppDir with the real AppRun, .desktop template, icons, and a stub binary.
-APPDIR="$TMP/ArtCraftLauncher.AppDir"
+APPDIR="$TMP/DevLauncher.AppDir"
 mkdir -p "$APPDIR/usr/bin"
 install -Dm755 "$HERE/AppRun" "$APPDIR/AppRun"
 install -Dm644 "$HERE/$APP_ID.desktop" "$APPDIR/usr/share/applications/$APP_ID.desktop"
 mkdir -p "$APPDIR/usr/share/icons"
 cp -R "$ROOT/assets/app-icon/hicolor" "$APPDIR/usr/share/icons/"
-printf '#!/bin/sh\necho "stub: $*"\n' >"$APPDIR/usr/bin/artcraft-launcher"
-chmod +x "$APPDIR/usr/bin/artcraft-launcher"
+printf '#!/bin/sh\necho "stub: $*"\n' >"$APPDIR/usr/bin/dev-launcher"
+chmod +x "$APPDIR/usr/bin/dev-launcher"
 
-APPIMAGE="$TMP/artcraft-launcher test.AppImage" # spaces on purpose: Exec must stay quoted
+APPIMAGE="$TMP/dev-launcher test.AppImage" # spaces on purpose: Exec must stay quoted
 : >"$APPIMAGE"
 export APPIMAGE
 export HOME="$TMP/home"
 export XDG_DATA_HOME="$HOME/.local/share"
 mkdir -p "$HOME"
-unset DESKTOPINTEGRATION ARTCRAFT_LAUNCHER_NO_DESKTOP_INTEGRATION
+unset DESKTOPINTEGRATION DEV_LAUNCHER_NO_DESKTOP_INTEGRATION
 
 # Record cache refreshes without needing a desktop or GTK installation.
 export REAL_CACHE_UPDATER
@@ -96,7 +96,7 @@ cp "$DESKTOP" "$TMP/generated-entry"
 
 # 6. Opt-out installs nothing.
 rm -rf "$XDG_DATA_HOME"
-ARTCRAFT_LAUNCHER_NO_DESKTOP_INTEGRATION=1 "$APPDIR/AppRun" >/dev/null || fail "opt-out launch exited non-zero"
+DEV_LAUNCHER_NO_DESKTOP_INTEGRATION=1 "$APPDIR/AppRun" >/dev/null || fail "opt-out launch exited non-zero"
 [[ ! -e "$XDG_DATA_HOME" ]] || fail "opt-out still integrated"
 
 # 7. An unwritable data dir never blocks the launch.
@@ -186,7 +186,7 @@ rm -rf "$XDG_DATA_HOME"
 "$APPDIR/AppRun" >/dev/null || fail "launch before appimaged failed"
 apps="$XDG_DATA_HOME/applications"
 real="$(readlink -f "$APPIMAGE")"
-printf '[Desktop Entry]\nName=ArtCraft Launcher\nExec="/usr/bin/appimaged" wrap "%s" %%F\nStartupWMClass=%s\nActions=Trash;\n\n[Desktop Action Trash]\nName=Move to Trash\nExec=gio trash "%s"\n' "$real" "$APP_ID" "$real" >"$apps/appimagekit_0123abcd.desktop"
+printf '[Desktop Entry]\nName=D.E.V. Launcher\nExec="/usr/bin/appimaged" wrap "%s" %%F\nStartupWMClass=%s\nActions=Trash;\n\n[Desktop Action Trash]\nName=Move to Trash\nExec=gio trash "%s"\n' "$real" "$APP_ID" "$real" >"$apps/appimagekit_0123abcd.desktop"
 rm -rf "$XDG_DATA_HOME/icons"
 out="$("$APPDIR/AppRun" managed)" || fail "launch beside appimaged failed"
 [[ "$out" = "stub: managed" ]] || fail "launch beside appimaged lost arguments"
@@ -197,13 +197,13 @@ out="$("$APPDIR/AppRun" managed)" || fail "launch beside appimaged failed"
 rm -rf "$XDG_DATA_HOME" && mkdir -p "$apps"
 spaced="$TMP/Art Craft.AppImage"
 : >"$spaced"
-printf "[Desktop Entry]\nName=ArtCraft Launcher\nStartupWMClass=%s\nExec=env DESKTOPINTEGRATION=1 '%s'" "$APP_ID" "$(readlink -f "$spaced")" >"$apps/artcraft_launcher.desktop"
+printf "[Desktop Entry]\nName=D.E.V. Launcher\nStartupWMClass=%s\nExec=env DESKTOPINTEGRATION=1 '%s'" "$APP_ID" "$(readlink -f "$spaced")" >"$apps/dev_launcher.desktop"
 APPIMAGE="$spaced" "$APPDIR/AppRun" >/dev/null || fail "launch beside Gear Lever failed"
 [[ ! -e "$DESKTOP" ]] || fail "integrated beside Gear Lever's entry"
 
 # 15b. Our entry with user changes stays beside a manager's entry.
-cp "$apps/artcraft_launcher.desktop" "$TMP/gear-lever-entry"
-sed "s|^Exec=.*|Exec=\"$(readlink -f "$APPIMAGE")\"|" "$TMP/gear-lever-entry" >"$apps/artcraft_launcher.desktop"
+cp "$apps/dev_launcher.desktop" "$TMP/gear-lever-entry"
+sed "s|^Exec=.*|Exec=\"$(readlink -f "$APPIMAGE")\"|" "$TMP/gear-lever-entry" >"$apps/dev_launcher.desktop"
 sed 's/^Name=.*/Name=My Launcher/' "$TMP/generated-entry" >"$DESKTOP"
 cp "$DESKTOP" "$TMP/renamed-entry"
 "$APPDIR/AppRun" >/dev/null || fail "launch with renamed entry failed"
@@ -216,10 +216,10 @@ printf '[Desktop Entry]\nStartupWMClass=%s\nExec="%s.old"\n' "$APP_ID" "$(readli
 [[ -f "$DESKTOP" ]] || fail "an entry for another file blocked integration"
 
 # 15d. An entry from a release with the old StartupWMClass is ours: refreshed, and dropped beside appimaged's.
-sed 's/^StartupWMClass=.*/StartupWMClass=artcraft-launcher/' "$TMP/generated-entry" >"$DESKTOP"
+sed 's/^StartupWMClass=.*/StartupWMClass=dev-launcher/' "$TMP/generated-entry" >"$DESKTOP"
 "$APPDIR/AppRun" >/dev/null || fail "launch over an older release's entry failed"
 cmp -s "$DESKTOP" "$TMP/generated-entry" || fail "older release's entry not refreshed"
-sed 's/^StartupWMClass=.*/StartupWMClass=artcraft-launcher/' "$TMP/generated-entry" >"$DESKTOP"
+sed 's/^StartupWMClass=.*/StartupWMClass=dev-launcher/' "$TMP/generated-entry" >"$DESKTOP"
 printf '[Desktop Entry]\nExec="/usr/bin/appimaged" wrap "%s" %%F\nStartupWMClass=%s\n' "$real" "$APP_ID" >"$apps/appimagekit_0123abcd.desktop"
 "$APPDIR/AppRun" >/dev/null || fail "launch over an older release's entry beside appimaged failed"
 [[ ! -e "$DESKTOP" ]] || fail "older release's entry kept beside appimaged's"
@@ -232,7 +232,7 @@ for key in NoDisplay Hidden; do
 done
 
 # 15f. A manager's entry left with the old window class by an in-place update: ours stays.
-printf '[Desktop Entry]\nExec="/usr/bin/appimaged" wrap "%s" %%F\nStartupWMClass=artcraft-launcher\n' "$real" >"$apps/appimagekit_0123abcd.desktop"
+printf '[Desktop Entry]\nExec="/usr/bin/appimaged" wrap "%s" %%F\nStartupWMClass=dev-launcher\n' "$real" >"$apps/appimagekit_0123abcd.desktop"
 "$APPDIR/AppRun" >/dev/null || fail "launch beside an old-class manager entry failed"
 [[ -f "$DESKTOP" ]] || fail "own entry dropped beside a manager entry with the old class"
 

@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Name=D.E.V. Launcher
+GenericName=App Launcher
+Comment=Install, update and launch the D.E.V. App Suite
+Exec=dev-launcher
+TryExec=dev-launcher
+Icon=dev.draftcraft.Launcher
+Terminal=false
+StartupNotify=true
+StartupWMClass=dev.draftcraft.Launcher
+Categories=Utility;PackageManager;
+Keywords=artcraft;craft;launcher;installer;updater;photocraft;filmcraft;apps;

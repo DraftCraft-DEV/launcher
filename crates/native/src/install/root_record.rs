@@ -22,7 +22,7 @@ const MAX_BYTES: u64 = 16 << 20;
 
 /// Where the list for `app_id` sits, relative to the install prefix.
 pub(super) fn relative(app_id: &str) -> PathBuf {
-    Path::new("share/artcraft-launcher/installed").join(format!("{app_id}.files"))
+    Path::new("share/dev-launcher/installed").join(format!("{app_id}.files"))
 }
 
 /// The list for `app_id` under `prefix` and every folder below `prefix` that holds it: the paths
@@ -211,7 +211,7 @@ mod tests {
         let files: Vec<PathBuf> = files.iter().map(PathBuf::from).collect();
         std::fs::create_dir_all(&prefix).unwrap();
         stage(&prefix, "wordcraft", &files).unwrap();
-        for d in [prefix.clone(), prefix.join("share"), prefix.join("share/artcraft-launcher"), prefix.join("share/artcraft-launcher/installed")] {
+        for d in [prefix.clone(), prefix.join("share"), prefix.join("share/dev-launcher"), prefix.join("share/dev-launcher/installed")] {
             std::fs::set_permissions(&d, std::fs::Permissions::from_mode(0o755)).unwrap();
         }
         std::fs::set_permissions(prefix.join(relative("wordcraft")), std::fs::Permissions::from_mode(0o644)).unwrap();
@@ -223,7 +223,7 @@ mod tests {
         let (dir, prefix) = installed(&["bin/wordcraft", "share/applications/ai.storyteller.wordcraft.desktop"]);
         let owned = owned(&prefix, "wordcraft", me(dir.path())).unwrap();
         let expected: HashSet<PathBuf> =
-            ["bin/wordcraft", "share/applications/ai.storyteller.wordcraft.desktop", "share/artcraft-launcher/installed/wordcraft.files"]
+            ["bin/wordcraft", "share/applications/ai.storyteller.wordcraft.desktop", "share/dev-launcher/installed/wordcraft.files"]
                 .iter()
                 .map(|f| prefix.join(f))
                 .collect();
@@ -271,9 +271,9 @@ mod tests {
         let prefix = Path::new("/usr/local");
         let expected: Vec<PathBuf> = [
             "/usr/local/share",
-            "/usr/local/share/artcraft-launcher",
-            "/usr/local/share/artcraft-launcher/installed",
-            "/usr/local/share/artcraft-launcher/installed/wordcraft.files",
+            "/usr/local/share/dev-launcher",
+            "/usr/local/share/dev-launcher/installed",
+            "/usr/local/share/dev-launcher/installed/wordcraft.files",
         ]
         .iter()
         .map(PathBuf::from)
@@ -356,7 +356,7 @@ mod tests {
         std::fs::write(tree.join("bin/wordcraft"), b"").unwrap();
         stage(&tree, "wordcraft", &[PathBuf::from("bin/wordcraft")]).unwrap();
         // As a loose archive or umask, or a restrictive umask, could leave the staged copy.
-        for (p, mode) in [("share", 0o777), ("share/artcraft-launcher", 0o700), ("share/artcraft-launcher/installed", 0o770)] {
+        for (p, mode) in [("share", 0o777), ("share/dev-launcher", 0o700), ("share/dev-launcher/installed", 0o770)] {
             std::fs::set_permissions(tree.join(p), std::fs::Permissions::from_mode(mode)).unwrap();
         }
         std::fs::set_permissions(tree.join(relative("wordcraft")), std::fs::Permissions::from_mode(0o600)).unwrap();
@@ -400,7 +400,7 @@ mod tests {
         let outside = dir.path().join("outside");
         std::fs::create_dir_all(tree.join("share")).unwrap();
         std::fs::create_dir_all(&outside).unwrap();
-        std::os::unix::fs::symlink(&outside, tree.join("share/artcraft-launcher")).unwrap();
+        std::os::unix::fs::symlink(&outside, tree.join("share/dev-launcher")).unwrap();
         assert!(stage(&tree, "wordcraft", &[PathBuf::from("bin/wordcraft")]).is_err());
         assert_eq!(std::fs::read_dir(&outside).unwrap().count(), 0);
 

@@ -1,14 +1,14 @@
-//! ArtCraft Launcher updating itself.
+//! D.E.V. Launcher updating itself.
 //!
 //! Delegated to [`craft_update::self_update`].
 
 use std::ffi::OsString;
 
-use artcraft_launcher_core::PackageKind;
-use artcraft_launcher_core::platform::Platform;
-use artcraft_launcher_core::protocol::JobPhase;
-use artcraft_launcher_core::release::Release;
-use artcraft_launcher_core::version::Version;
+use dev_launcher_core::PackageKind;
+use dev_launcher_core::platform::Platform;
+use dev_launcher_core::protocol::JobPhase;
+use dev_launcher_core::release::Release;
+use dev_launcher_core::version::Version;
 
 use crate::http::{Http, Stop};
 use crate::paths::Paths;
@@ -57,16 +57,16 @@ fn to_update_release(release: &Release, repo: &str) -> craft_update::Release {
 fn to_update_platform(platform: Platform) -> craft_update::Platform {
     craft_update::Platform {
         os: match platform.os {
-            artcraft_launcher_core::Os::Windows => craft_update::Os::Windows,
-            artcraft_launcher_core::Os::MacOs => craft_update::Os::MacOs,
-            artcraft_launcher_core::Os::Linux => craft_update::Os::Linux,
-            artcraft_launcher_core::Os::FreeBsd => craft_update::Os::FreeBsd,
+            dev_launcher_core::Os::Windows => craft_update::Os::Windows,
+            dev_launcher_core::Os::MacOs => craft_update::Os::MacOs,
+            dev_launcher_core::Os::Linux => craft_update::Os::Linux,
+            dev_launcher_core::Os::FreeBsd => craft_update::Os::FreeBsd,
         },
         arch: match platform.arch {
-            artcraft_launcher_core::Arch::X64 => craft_update::Arch::X64,
-            artcraft_launcher_core::Arch::Arm64 => craft_update::Arch::Arm64,
-            artcraft_launcher_core::Arch::X86 => craft_update::Arch::X86,
-            artcraft_launcher_core::Arch::Riscv64 => craft_update::Arch::Riscv64,
+            dev_launcher_core::Arch::X64 => craft_update::Arch::X64,
+            dev_launcher_core::Arch::Arm64 => craft_update::Arch::Arm64,
+            dev_launcher_core::Arch::X86 => craft_update::Arch::X86,
+            dev_launcher_core::Arch::Riscv64 => craft_update::Arch::Riscv64,
         },
     }
 }
@@ -103,7 +103,7 @@ pub fn update(
     let update_release = to_update_release(release, repo);
     let update_platform = to_update_platform(platform);
     let update_paths = to_update_paths(paths);
-    let update_http = craft_update::Http::new("ArtCraft-Launcher/SelfUpdate")?;
+    let update_http = craft_update::Http::new("DEV-Launcher/SelfUpdate")?;
     let mut update_phase = |p: craft_update::JobPhase| {
         phase(match p {
             craft_update::JobPhase::Downloading { done, total } => JobPhase::Downloading { done, total },
@@ -181,17 +181,17 @@ mod tests {
     fn the_update_checks_links_against_the_repo_the_release_came_from() {
         let app = &craft_update::suite::LAUNCHER;
         let sums = |name: &str| [("a".repeat(64), name.to_string())];
-        let renamed = artcraft_launcher_core::release::release_from_sums(
-            "storytold/artcraft-launcher-next",
+        let renamed = dev_launcher_core::release::release_from_sums(
+            "storytold/dev-launcher-next",
             "v0.9.0",
-            &sums("artcraft-launcher-0.9.0-linux-x86_64.AppImage"),
+            &sums("dev-launcher-0.9.0-linux-x86_64.AppImage"),
         );
-        let carried = to_update_release(&renamed, "storytold/artcraft-launcher-next");
+        let carried = to_update_release(&renamed, "storytold/dev-launcher-next");
         assert!(craft_update::install::check_download_link(app, &carried, &carried.assets[0]).is_ok());
         let own = to_update_release(&renamed, "");
         assert!(craft_update::install::check_download_link(app, &own, &own.assets[0]).is_err());
 
-        let launcher = artcraft_launcher_core::release::release_from_sums(app.repo, "v0.9.0", &sums("artcraft-launcher-0.9.0-linux-x86_64.AppImage"));
+        let launcher = dev_launcher_core::release::release_from_sums(app.repo, "v0.9.0", &sums("dev-launcher-0.9.0-linux-x86_64.AppImage"));
         let launcher = to_update_release(&launcher, app.repo);
         assert!(craft_update::install::check_download_link(app, &launcher, &launcher.assets[0]).is_ok());
     }
@@ -201,22 +201,22 @@ mod tests {
     /// an MSI copy, an MSI for another architecture, or an MSI for a portable copy.
     #[test]
     fn a_release_without_the_installed_format_for_this_platform_does_not_install() {
-        use artcraft_launcher_core::platform::{Arch, Os};
+        use dev_launcher_core::platform::{Arch, Os};
         use std::path::PathBuf;
         let app = &craft_update::suite::LAUNCHER;
         let release = |names: &[&str]| {
             let sums: Vec<(String, String)> = names.iter().map(|n| ("a".repeat(64), (*n).to_string())).collect();
-            artcraft_launcher_core::release::release_from_sums(app.repo, "v0.9.0", &sums)
+            dev_launcher_core::release::release_from_sums(app.repo, "v0.9.0", &sums)
         };
         let windows_x64 = Platform { os: Os::Windows, arch: Arch::X64 };
         let msi = Install::Msi(PathBuf::new());
         let portable = Install::Portable(PathBuf::new());
 
-        let with_msi = release(&["artcraft-launcher-0.9.0-windows-x64.msi"]);
+        let with_msi = release(&["dev-launcher-0.9.0-windows-x64.msi"]);
         assert!(installs_from(&msi, &with_msi, windows_x64));
-        let appimage_only = release(&["artcraft-launcher-0.9.0-linux-x86_64.AppImage"]);
+        let appimage_only = release(&["dev-launcher-0.9.0-linux-x86_64.AppImage"]);
         assert!(!installs_from(&msi, &appimage_only, windows_x64));
-        let other_arch = release(&["artcraft-launcher-0.9.0-windows-arm64.msi"]);
+        let other_arch = release(&["dev-launcher-0.9.0-windows-arm64.msi"]);
         assert!(!installs_from(&msi, &other_arch, windows_x64));
         assert!(installs_from(&msi, &other_arch, Platform { os: Os::Windows, arch: Arch::Arm64 }));
         assert!(!installs_from(&portable, &with_msi, windows_x64));
@@ -249,38 +249,38 @@ mod tests {
     fn an_update_is_installable_only_when_the_release_has_its_file() {
         use std::path::PathBuf;
 
-        use artcraft_launcher_core::release::Asset;
-        use artcraft_launcher_core::{Arch, Os};
-        // ArtCraft Launcher v0.19.0's files, without the signatures: macOS has only the disk
+        use dev_launcher_core::release::Asset;
+        use dev_launcher_core::{Arch, Os};
+        // D.E.V. Launcher v0.19.0's files, without the signatures: macOS has only the disk
         // image, and Windows has no x86 build.
         let names = [
-            "artcraft-launcher-0.19.0-freebsd-aarch64.tar.gz",
-            "artcraft-launcher-0.19.0-freebsd-x86_64.tar.gz",
-            "artcraft-launcher-0.19.0-linux-aarch64.AppImage",
-            "artcraft-launcher-0.19.0-linux-aarch64.AppImage.zsync",
-            "artcraft-launcher-0.19.0-linux-aarch64.deb",
-            "artcraft-launcher-0.19.0-linux-aarch64.flatpak",
-            "artcraft-launcher-0.19.0-linux-aarch64.oci-manifest.json",
-            "artcraft-launcher-0.19.0-linux-aarch64.pkg.tar.zst",
-            "artcraft-launcher-0.19.0-linux-aarch64.rpm",
-            "artcraft-launcher-0.19.0-linux-aarch64.tar.gz",
-            "artcraft-launcher-0.19.0-linux-riscv64.deb",
-            "artcraft-launcher-0.19.0-linux-riscv64.rpm",
-            "artcraft-launcher-0.19.0-linux-riscv64.tar.gz",
-            "artcraft-launcher-0.19.0-linux-x86_64.AppImage",
-            "artcraft-launcher-0.19.0-linux-x86_64.AppImage.zsync",
-            "artcraft-launcher-0.19.0-linux-x86_64.deb",
-            "artcraft-launcher-0.19.0-linux-x86_64.flatpak",
-            "artcraft-launcher-0.19.0-linux-x86_64.oci-manifest.json",
-            "artcraft-launcher-0.19.0-linux-x86_64.pkg.tar.zst",
-            "artcraft-launcher-0.19.0-linux-x86_64.rpm",
-            "artcraft-launcher-0.19.0-linux-x86_64.tar.gz",
-            "artcraft-launcher-0.19.0-macos-universal.dmg",
-            "artcraft-launcher-0.19.0-windows-arm64-portable.zip",
-            "artcraft-launcher-0.19.0-windows-arm64.msi",
-            "artcraft-launcher-0.19.0-windows-x64-portable.zip",
-            "artcraft-launcher-0.19.0-windows-x64.msi",
-            "artcraft-launcher-web-0.19.0.zip",
+            "dev-launcher-0.19.0-freebsd-aarch64.tar.gz",
+            "dev-launcher-0.19.0-freebsd-x86_64.tar.gz",
+            "dev-launcher-0.19.0-linux-aarch64.AppImage",
+            "dev-launcher-0.19.0-linux-aarch64.AppImage.zsync",
+            "dev-launcher-0.19.0-linux-aarch64.deb",
+            "dev-launcher-0.19.0-linux-aarch64.flatpak",
+            "dev-launcher-0.19.0-linux-aarch64.oci-manifest.json",
+            "dev-launcher-0.19.0-linux-aarch64.pkg.tar.zst",
+            "dev-launcher-0.19.0-linux-aarch64.rpm",
+            "dev-launcher-0.19.0-linux-aarch64.tar.gz",
+            "dev-launcher-0.19.0-linux-riscv64.deb",
+            "dev-launcher-0.19.0-linux-riscv64.rpm",
+            "dev-launcher-0.19.0-linux-riscv64.tar.gz",
+            "dev-launcher-0.19.0-linux-x86_64.AppImage",
+            "dev-launcher-0.19.0-linux-x86_64.AppImage.zsync",
+            "dev-launcher-0.19.0-linux-x86_64.deb",
+            "dev-launcher-0.19.0-linux-x86_64.flatpak",
+            "dev-launcher-0.19.0-linux-x86_64.oci-manifest.json",
+            "dev-launcher-0.19.0-linux-x86_64.pkg.tar.zst",
+            "dev-launcher-0.19.0-linux-x86_64.rpm",
+            "dev-launcher-0.19.0-linux-x86_64.tar.gz",
+            "dev-launcher-0.19.0-macos-universal.dmg",
+            "dev-launcher-0.19.0-windows-arm64-portable.zip",
+            "dev-launcher-0.19.0-windows-arm64.msi",
+            "dev-launcher-0.19.0-windows-x64-portable.zip",
+            "dev-launcher-0.19.0-windows-x64.msi",
+            "dev-launcher-web-0.19.0.zip",
             "SHA256SUMS.txt",
         ];
         let release = Release {
@@ -305,7 +305,7 @@ mod tests {
         assert!(!installs_from(&Install::Portable(PathBuf::new()), &release, windows(Arch::X86)));
         assert!(!installs_from(&Install::MacApp(PathBuf::new()), &Release::default(), mac));
         // The file is looked for by the update's own rules, which don't take this spelling.
-        let name = "artcraft-launcher_0.18.0_x86_64.msi";
+        let name = "dev-launcher_0.18.0_x86_64.msi";
         let other = Release {
             assets: vec![Asset { name: name.into(), size: 1, url: format!("https://example.invalid/{name}"), sha256: None }],
             ..Release::default()
@@ -317,7 +317,7 @@ mod tests {
     fn installs_from_looks_for_the_format_the_update_downloads() {
         use std::path::PathBuf;
 
-        use artcraft_launcher_core::{Arch, Os};
+        use dev_launcher_core::{Arch, Os};
         // `update` names the format it looked for when the release has no file for it, so an
         // empty release shows which format craft-update picks for each kind of copy.
         let dir = tempfile::tempdir().unwrap();

@@ -16,8 +16,8 @@
 use std::collections::BTreeMap;
 use std::sync::{Mutex, PoisonError};
 
-use artcraft_launcher_core::protocol::{LatestRelease, Source};
-use artcraft_launcher_core::release::{self, Release};
+use dev_launcher_core::protocol::{LatestRelease, Source};
+use dev_launcher_core::release::{self, Release};
 use serde::{Deserialize, Serialize};
 
 use crate::http::{Fetched, Http};
@@ -38,8 +38,8 @@ pub trait ReleaseSource: Send + Sync {
     }
     /// The release `track` follows: the latest stable one, or the chosen nightly or exact version
     /// from [`versions`](Self::versions), with no fallback to another.
-    fn chosen(&self, repo: &str, track: &artcraft_launcher_core::protocol::VersionTrack) -> Answer {
-        if *track == artcraft_launcher_core::protocol::VersionTrack::Stable {
+    fn chosen(&self, repo: &str, track: &dev_launcher_core::protocol::VersionTrack) -> Answer {
+        if *track == dev_launcher_core::protocol::VersionTrack::Stable {
             return self.latest(repo, false);
         }
         let latest = match self.versions(repo) {

@@ -39,7 +39,7 @@ pub struct CraftApp {
     pub kind: AppKind,
     /// Who publishes it, as the card's byline shows it (`ArtCraft`, `Tangency Labs`).
     pub publisher: &'static str,
-    /// The publisher its Windows installer names, when it isn't ArtCraft's (`Learning Machines LLC`).
+    /// The publisher its Windows installer names, when it isn't ArtCraft's (`DraftCraft Engineering Ventures`).
     pub msi_publisher: Option<&'static str>,
     /// The bundle id when it isn't `ai.storyteller.<id>` (a community app brings its own).
     pub bundle: Option<&'static str>,

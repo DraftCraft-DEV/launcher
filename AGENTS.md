@@ -53,31 +53,31 @@ Dependencies and assets use SPDX identifiers. An expression is allowed when ever
 
 # AGENTS.md: guide for AI agents and contributors
 
-ArtCraft Launcher installs, updates and launches the **Craft App Suite** (PhotoCraft, LightCraft,
+D.E.V. Launcher installs, updates and launches the **D.E.V. App Suite** (PhotoCraft, LightCraft,
 FilmCraft, DesignCraft, VectorCraft, PdfCraft, EffectCraft, WordCraft, DeckCraft, GridCraft,
 CADCraft, SoundCraft, FigCraft, Craft Anything, TextureCraft, MaterialCraft), plus approved **community apps** made outside ArtCraft and labelled
 as such (today SolidCraft, by Tangency Labs, and MailCraft, by UCS Care Group). It is written in **Rust only** (no JavaScript or TypeScript): the desktop
 app is native egui/eframe, and the web build is the same Rust compiled to WebAssembly (trunk +
 wasm-bindgen). **No Tauri, Electron or webview shells**, ever.
 
-The product name is always **ArtCraft Launcher** in user-facing text: UI, window titles, About,
+The product name is always **D.E.V. Launcher** in user-facing text: UI, window titles, About,
 tray menu, notifications, installers, release names, docs prose. The suite is the **Craft App
-Suite**. Machine names stay lowercase: crates and binaries (`artcraft-launcher`,
-`artcraft-launcher-*`), file names, and the app id `ai.storyteller.artcraft-launcher`. Note the
-GitHub repo is `storytold/craft-launcher`, while every file and package is `artcraft-launcher-*`.
+Suite**. Machine names stay lowercase: crates and binaries (`dev-launcher`,
+`dev-launcher-*`), file names, and the app id `dev.draftcraft.Launcher`. Note the
+GitHub repo is `DraftCraft-DEV/launcher`, while every file and package is `dev-launcher-*`.
 
 ## 1. Workspace map
 
 ```text
 crates/
-  core      artcraft-launcher-core      pure and wasm-safe: the app catalog, versions, GitHub
+  core      dev-launcher-core      pure and wasm-safe: the app catalog, versions, GitHub
                                         release parsing, picking the right asset per platform
-  native    artcraft-launcher-native    desktop only: HTTP, detecting installed apps, download,
+  native    dev-launcher-native    desktop only: HTTP, detecting installed apps, download,
                                         verify and install
-  ui-egui   artcraft-launcher-ui-egui   the shared egui UI (desktop and web)
+  ui-egui   dev-launcher-ui-egui   the shared egui UI (desktop and web)
 apps/
-  artcraft-launcher                     desktop shell (eframe): window, tray icon, notifications
-  artcraft-launcher-web                 the same UI in the browser (trunk; catalog and downloads only)
+  dev-launcher                     desktop shell (eframe): window, tray icon, notifications
+  dev-launcher-web                 the same UI in the browser (trunk; catalog and downloads only)
 xtask/                                  cargo xtask ci | wasm | version | ico
 packaging/                              macOS, Windows, Linux, FreeBSD and web packaging scripts
 assets/app-icon/                        the launcher's own icon (master SVG, renders, tray icons)
@@ -113,7 +113,7 @@ settings file must produce an error the user can act on, never a panic.
   owner on 2026-10-28) and `https://github.com/UCS-Care-Group/mailcraft/releases` (MailCraft,
   approved on 2026-11-08). A community app's repo is pinned in the catalog (`CraftApp::repo`,
   `AppKind::Community`): the release feed can move an app within `storytold/`, never to another
-  owner. The one other exception is a developer's own loopback mirror (`ARTCRAFT_LAUNCHER_DOWNLOAD_BASE`,
+  owner. The one other exception is a developer's own loopback mirror (`DEV_LAUNCHER_DOWNLOAD_BASE`,
   `cargo xtask local`); keep it loopback-only and behind the `local-mirror` cargo feature, which
   release builds never enable.
 - Verify each download against the release's `SHA256SUMS.txt` before running or installing it.
@@ -122,7 +122,7 @@ settings file must produce an error the user can act on, never a panic.
   SolidCraft); an app with none (`mac_team = None`, today MailCraft) is not installed there, only
   opened if present.
 - The details drawer's pictures are the one other download: JPEGs only, from a pinned tag of
-  `https://raw.githubusercontent.com/storytold/craft-launcher-assets/` (`core::details`),
+  `https://raw.githubusercontent.com/DraftCraft-DEV/launcher-assets/` (`core::details`),
   capped at 2 MB each, cached, and never run. Pictures are not bundled in this repo.
 - Never run an installer with elevated rights silently; tell the user what is about to happen.
 - Never delete a user's files outside what the launcher itself installed.
@@ -152,7 +152,7 @@ Every user-facing string goes through `crates/ui-egui/src/i18n` (`tl!("…")` fo
 for `{placeholders}`, `tn` for counts). English in the code is the lookup key; adding a string
 means adding its row to every catalog marked `complete_menus` (the `*.tsv` files in
 `crates/ui-egui/src/i18n/`), which the i18n tests check. Translate clean-room from the meaning of
-the English text, never through another catalog. Product and app names (ArtCraft Launcher, Craft
+the English text, never through another catalog. Product and app names (D.E.V. Launcher, Craft
 App Suite, PhotoCraft…) stay in English.
 A CJK language is drawn with the system's own CJK font (`crates/ui-egui/src/cjk_font.rs`, desktop
 only; English where there is none): never bundle a CJK font, they are 10 MB and more. Georgian
@@ -172,7 +172,7 @@ borrows the system's Georgian font the same way.
    `cfg(not(target_arch = "wasm32"))`.
 4. **Tests are the gate.** Release parsing and asset picking in `core` get unit tests with real
    GitHub release JSON fixtures (small, committed under `crates/core/tests/fixtures/`).
-5. When fetching anything, use a generic `ArtCraft-Launcher/<version>` User-Agent and never put
+5. When fetching anything, use a generic `DEV-Launcher/<version>` User-Agent and never put
    a person's name, email or other personal details in requests.
 6. **Time in this repository goes through `jiff`.** Do not hand-roll calendar conversion, and do not add `chrono` beside it.
 
@@ -191,31 +191,31 @@ packaging/linux/AppRun` and `actionlint`.
 The version lives only in `[workspace.package] version` in the root `Cargo.toml`
 (`cargo xtask version`, `cargo xtask version set X.Y.Z[-pre]`). Pushing to the `release` branch runs
 `.github/workflows/release.yml`, which builds every platform and creates the draft GitHub Release
-**ArtCraft Launcher v<version>** with `SHA256SUMS.txt`.
+**D.E.V. Launcher v<version>** with `SHA256SUMS.txt`.
 
 Release assets (keep these names exact; the launcher's own self-update and the README rely on them):
 
 | Platform | Files |
 |---|---|
-| Windows | `artcraft-launcher-<ver>-windows-{x64,x86,arm64}.msi`, `…-windows-{x64,x86,arm64}-portable.zip` |
-| macOS | `artcraft-launcher-<ver>-macos-universal.dmg` |
-| Linux | `artcraft-launcher-<ver>-linux-{x86_64,aarch64}.{AppImage,AppImage.zsync,deb,rpm,tar.gz,flatpak}`, `artcraft-launcher-<ver>-linux-riscv64.{deb,rpm,tar.gz}` |
-| FreeBSD | `artcraft-launcher-<ver>-freebsd-x86_64.tar.gz` |
-| Web | `artcraft-launcher-web-<ver>.zip` |
+| Windows | `dev-launcher-<ver>-windows-{x64,x86,arm64}.msi`, `…-windows-{x64,x86,arm64}-portable.zip` |
+| macOS | `dev-launcher-<ver>-macos-universal.dmg` |
+| Linux | `dev-launcher-<ver>-linux-{x86_64,aarch64}.{AppImage,AppImage.zsync,deb,rpm,tar.gz,flatpak}`, `dev-launcher-<ver>-linux-riscv64.{deb,rpm,tar.gz}` |
+| FreeBSD | `dev-launcher-<ver>-freebsd-x86_64.tar.gz` |
+| Web | `dev-launcher-web-<ver>.zip` |
 
 Packaging facts the code relies on:
 
 - The Windows MSI is **per-user** (no UAC prompt), by default into
-  `%LOCALAPPDATA%\Programs\ArtCraft Launcher`. Double-clicked it opens a WixUI setup wizard
+  `%LOCALAPPDATA%\Programs\D.E.V. Launcher`. Double-clicked it opens a WixUI setup wizard
   (Welcome; a folder page with a "Create a desktop shortcut" box; Ready; progress; Finish with
   "Launch"), whose art `package.ps1` draws at build time; self-update runs it with `/passive`, no
   wizard. The folder and the shortcut choice are recorded under
-  `HKCU\Software\Learning Machines LLC\ArtCraft Launcher` (`InstallDir`,
+  `HKCU\Software\DraftCraft Engineering Ventures\D.E.V. Launcher` (`InstallDir`,
   `DesktopShortcutChoice`) and reused by the next version, and `self_update.rs` reads `InstallDir`
   to know the running copy came from the MSI. Its shortcuts set AppUserModelID
-  `ai.storyteller.artcraft-launcher`, which toast notifications need. `portable.txt` beside the exe switches on portable mode
-  (`ArtCraftLauncherData\` next to the exe).
-- The macOS bundle is `ArtCraft Launcher.app` (executable `Contents/MacOS/ArtCraft Launcher`), a
+  `dev.draftcraft.Launcher`, which toast notifications need. `portable.txt` beside the exe switches on portable mode
+  (`DevLauncherData\` next to the exe).
+- The macOS bundle is `D.E.V. Launcher.app` (executable `Contents/MacOS/D.E.V. Launcher`), a
   normal Dock app that can also sit in the menu bar: `LSUIElement` must never be set.
 - Linux: the tray uses StatusNotifierItem over D-Bus and notifications use
   `org.freedesktop.Notifications`, both in pure Rust (no GTK, appindicator or libdbus).
@@ -229,9 +229,9 @@ Packaging facts the code relies on:
 - `--socket=pulseaudio` in the launcher manifests is for an app running *inside* the sandbox
   (SoundCraft's ALSA reaches the runtime's PulseAudio plugin through it); it also covers the
   microphone, which SoundCraft records through.
-- `build.rs` reads `ARTCRAFT_LAUNCHER_BUILD_SHA` / `ARTCRAFT_LAUNCHER_BUILD_DATE` and, on Windows,
-  embeds `assets/app-icon/artcraft-launcher.ico`, failing the build when
-  `ARTCRAFT_LAUNCHER_REQUIRE_WINRES=1` and it can't.
+- `build.rs` reads `DEV_LAUNCHER_BUILD_SHA` / `DEV_LAUNCHER_BUILD_DATE` and, on Windows,
+  embeds `assets/app-icon/dev-launcher.ico`, failing the build when
+  `DEV_LAUNCHER_REQUIRE_WINRES=1` and it can't.
 
 ## 5. Parallel agents
 

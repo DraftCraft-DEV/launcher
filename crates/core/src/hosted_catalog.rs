@@ -38,12 +38,11 @@ pub fn icon(_id: &str) -> Option<&'static [u8]> {
     None
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(feature = "test-catalog")))]
 mod tests {
     use super::*;
     use crate::catalog::SUITE;
 
-    #[cfg(not(feature = "test-catalog"))]
     #[test]
     fn the_catalog_is_the_bundled_one() {
         assert_eq!(apps().iter().map(|a| a.id).collect::<Vec<_>>(), SUITE.iter().map(|a| a.id).collect::<Vec<_>>());

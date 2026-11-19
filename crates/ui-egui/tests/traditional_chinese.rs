@@ -2,17 +2,17 @@
 //! so it can't share one with the English UI tests. Traditional Chinese is drawn with the system's
 //! Traditional Chinese font (Noto Sans CJK TC first, then PingFang TC or Microsoft JhengHei);
 //! where there is none (CI, minimal Linux installs), the UI stays in English and says why.
-//! `ARTCRAFT_LAUNCHER_SNAPSHOTS=<dir>` also saves screenshots (run with `-- --test-threads=1`).
+//! `DEV_LAUNCHER_SNAPSHOTS=<dir>` also saves screenshots (run with `-- --test-threads=1`).
 
 use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
-use artcraft_launcher_core::protocol::{Backend, Capabilities, Command, Event, JobPhase, LatestRelease, Origin, PausedDownload, Source};
-use artcraft_launcher_core::release::{Asset, Release};
-use artcraft_launcher_core::status::InstallSource;
-use artcraft_launcher_core::{Arch, Installed, Os, Platform, SUITE, version};
-use artcraft_launcher_ui_egui::settings::ViewMode;
-use artcraft_launcher_ui_egui::{Host, LauncherUi, Settings};
+use dev_launcher_core::protocol::{Backend, Capabilities, Command, Event, JobPhase, LatestRelease, Origin, PausedDownload, Source};
+use dev_launcher_core::release::{Asset, Release};
+use dev_launcher_core::status::InstallSource;
+use dev_launcher_core::{Arch, Installed, Os, Platform, SUITE, version};
+use dev_launcher_ui_egui::settings::ViewMode;
+use dev_launcher_ui_egui::{Host, LauncherUi, Settings};
 use egui_kittest::Harness;
 use egui_kittest::kittest::Queryable;
 
@@ -115,7 +115,7 @@ fn harness_language(
     manage: bool,
     language: &str,
 ) -> (Harness<'static, Option<LauncherUi>>, Rc<RefCell<Vec<Command>>>) {
-    artcraft_launcher_ui_egui::i18n::set_test_lang(artcraft_launcher_ui_egui::i18n::Lang::EN);
+    dev_launcher_ui_egui::i18n::set_test_lang(dev_launcher_ui_egui::i18n::Lang::EN);
     let sent = Rc::new(RefCell::new(Vec::new()));
     let sent2 = sent.clone();
     let mut backend = Some(Fake { events: events(), sent: sent2, manage, clock: Rc::new(Cell::new(NOW)) });
@@ -127,9 +127,9 @@ fn harness_language(
             {
                 let mut s = settings.clone();
                 s.theme = if theme == egui::Theme::Dark {
-                    artcraft_launcher_ui_egui::theme::ThemeChoice::Dark
+                    dev_launcher_ui_egui::theme::ThemeChoice::Dark
                 } else {
-                    artcraft_launcher_ui_egui::theme::ThemeChoice::Light
+                    dev_launcher_ui_egui::theme::ThemeChoice::Light
                 };
                 *state = Some(LauncherUi::new(ui.ctx(), Box::new(b), s));
             }
@@ -144,7 +144,7 @@ fn harness_language(
 }
 
 fn snapshot(h: &mut Harness<'_, Option<LauncherUi>>, name: &str) {
-    let Some(dir) = std::env::var_os("ARTCRAFT_LAUNCHER_SNAPSHOTS") else { return };
+    let Some(dir) = std::env::var_os("DEV_LAUNCHER_SNAPSHOTS") else { return };
     let img = h.render().unwrap();
     img.save(std::path::Path::new(&dir).join(format!("{name}.png"))).unwrap();
 }
@@ -152,7 +152,7 @@ fn snapshot(h: &mut Harness<'_, Option<LauncherUi>>, name: &str) {
 // One test: the UI language is process-wide.
 #[test]
 fn traditional_chinese_switches_persists_and_keeps_install_actions() {
-    use artcraft_launcher_ui_egui::i18n::Lang;
+    use dev_launcher_ui_egui::i18n::Lang;
     let (mut h, sent) = harness_language(ViewMode::Grid, egui::Theme::Dark, true, "en");
     h.run_steps(6);
     h.get_by_label("Settings").click();
@@ -161,12 +161,12 @@ fn traditional_chinese_switches_persists_and_keeps_install_actions() {
     h.run_steps(2);
     // Opening Settings doesn't load the (large) Traditional Chinese font: the picker names it in
     // English.
-    assert!(!artcraft_launcher_ui_egui::theme::cjk_font_loaded(Lang::ZH_TW));
+    assert!(!dev_launcher_ui_egui::theme::cjk_font_loaded(Lang::ZH_TW));
     // The list is long enough to scroll, so the last option may be out of view: click it through
     // accesskit, which reaches widgets that aren't visible.
     h.get_by_label("Traditional Chinese (Taiwan)").click_accesskit();
     h.run_steps(3);
-    if !artcraft_launcher_ui_egui::theme::cjk_font_available(Lang::ZH_TW) {
+    if !dev_launcher_ui_egui::theme::cjk_font_available(Lang::ZH_TW) {
         // No font for Traditional Chinese: choosing it keeps the UI in English, and Settings says
         // why. Ubuntu CI exercises this branch; Windows CI ships Microsoft JhengHei and runs the
         // translated branch below, so both are covered per platform.

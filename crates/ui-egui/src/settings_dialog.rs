@@ -1,9 +1,7 @@
 //! The Settings dialog: a large card in the shape of the app page (see `sheet.rs`), with the
 //! groups of settings in boxes, two columns once the window is wide enough.
 
-use artcraft_launcher_core::mcp_config::{McpConfigFormat, mcp_config};
-use artcraft_launcher_core::protocol::{Command, McpClientState};
-use artcraft_launcher_core::{Os, PackageKind};
+use dev_launcher_core::{Os, PackageKind};
 use egui::{RichText, Ui, vec2};
 
 use crate::app::{Host, LauncherUi};
@@ -54,13 +52,13 @@ impl LauncherUi {
         ui.set_max_height(size.y);
         let hero_h = sheet::hero(
             ui,
-            Some(crate::icons::artcraft_mark()),
+            Some(crate::icons::dev_mark()),
             tl!("Settings"),
-            &format!("ArtCraft Launcher {}", env!("CARGO_PKG_VERSION")),
+            &format!("D.E.V. Launcher {}", env!("CARGO_PKG_VERSION")),
             |_| {},
         );
 
-        let quit_width = widgets::button_width(ui, tl!("Quit ArtCraft Launcher"), 0.0);
+        let quit_width = widgets::button_width(ui, tl!("Quit D.E.V. Launcher"), 0.0);
         let done_width = widgets::button_width(ui, tl!("Done"), 90.0);
         let stack_actions = self.caps.manage_apps && quit_width + done_width + ui.spacing().item_spacing.x + 48.0 > size.x;
         let footer_h = if stack_actions { 2.0 * theme::CONTROL_H + ui.spacing().item_spacing.y } else { theme::CONTROL_H } + 32.0;
@@ -82,7 +80,7 @@ impl LauncherUi {
         egui::Frame::new().inner_margin(egui::Margin::symmetric(theme::PAD as i8, 16)).show(ui, |ui| {
             ui.set_width(ui.available_width());
             let quit = |ui: &mut Ui, host: &mut dyn Host| {
-                if self.caps.manage_apps && widgets::button(ui, tl!("Quit ArtCraft Launcher"), Kind::Secondary, 0.0).clicked() {
+                if self.caps.manage_apps && widgets::button(ui, tl!("Quit D.E.V. Launcher"), Kind::Secondary, 0.0).clicked() {
                     host.quit();
                 }
             };
@@ -118,7 +116,6 @@ impl LauncherUi {
                 this.settings_language(ui);
                 this.settings_updates(ui);
                 this.settings_appearance(ui);
-                this.settings_agents(ui);
             },
             |ui| {
                 let Ok(mut state) = state.try_borrow_mut() else { return };
@@ -172,7 +169,7 @@ impl LauncherUi {
     /// backend manages apps runs a pass over pending updates at once. The automatic-update checkbox
     /// is hidden on hosts that cannot manage apps.
     fn settings_updates(&mut self, ui: &mut Ui) {
-        let launcher_id = artcraft_launcher_core::catalog::LAUNCHER_ID;
+        let launcher_id = dev_launcher_core::catalog::LAUNCHER_ID;
         self.request_versions(launcher_id);
         sheet::panel(ui, tl!("Updates"), |ui| {
             let mut every = self.settings.check_every;
@@ -219,7 +216,7 @@ impl LauncherUi {
             ui.checkbox(&mut self.settings.notify, tl!("Notify me when an installed app has an update"));
             ui.checkbox(&mut self.settings.prereleases, tl!("Include pre-releases (betas and release candidates)"));
             row(ui, tl!("Launcher version"), 200.0, &mut |ui, label| {
-                self.version_combo(ui, launcher_id, &artcraft_launcher_core::catalog::LAUNCHER, 200.0, label);
+                self.version_combo(ui, launcher_id, &dev_launcher_core::catalog::LAUNCHER, 200.0, label);
                 self.version_lock(ui, launcher_id);
             });
             self.launcher_version_notes(ui);
@@ -345,7 +342,7 @@ impl LauncherUi {
                 ));
             }
             if let Some(mut on) = host.login_item()
-                && ui.checkbox(&mut on, tl!("Start ArtCraft Launcher when I log in")).changed()
+                && ui.checkbox(&mut on, tl!("Start D.E.V. Launcher when I log in")).changed()
                 && let Err(e) = host.set_login_item(on)
             {
                 self.toast_from_ui(fmt(tl!("Couldn't change the login item: {e}"), &[("e", &e)]), true);
@@ -361,7 +358,7 @@ impl LauncherUi {
             ui.label(RichText::new(tl!("Questions, ideas and news from the ArtCraft team")).color(t.muted));
             ui.add_space(6.0);
             ui.horizontal_wrapped(|ui| {
-                use artcraft_launcher_core::catalog::{GITHUB_URL, WEBSITE_URL};
+                use dev_launcher_core::catalog::{GITHUB_URL, WEBSITE_URL};
                 if widgets::button(ui, tl!("Join the Discord"), Kind::Primary, 0.0).on_hover_text(self.discord_url).clicked() {
                     widgets::open_external_link(ui.ctx(), self.discord_url);
                 }
@@ -372,7 +369,7 @@ impl LauncherUi {
                     widgets::open_external_link(ui.ctx(), GITHUB_URL);
                 }
                 // Wrap the social links as a group so their icons stay together.
-                let width = widgets::icon_links_width(artcraft_launcher_core::catalog::SOCIAL.len(), 16.0);
+                let width = widgets::icon_links_width(dev_launcher_core::catalog::SOCIAL.len(), 16.0);
                 ui.allocate_ui_with_layout(vec2(width, theme::CONTROL_H), egui::Layout::left_to_right(egui::Align::Center), |ui| {
                     widgets::social_icons(ui, 16.0);
                 });
@@ -391,110 +388,4 @@ impl LauncherUi {
         self.settings.theme = theme_choice;
     }
 
-    /// AI agents: one switch that lets MCP clients reach every installed Craft app through the
-    /// `craft-ai-mcp` gateway (it is the person's consent: off, no agent reaches any app), then
-    /// quick install (Add/Remove per MCP client found here) and the configuration to copy for any
-    /// other client.
-    fn settings_agents(&mut self, ui: &mut Ui) {
-        // Behind the `AI-MCP` feature flag, set in `ArtCraft/flags.toml` or `CRAFT_FLAGS` only.
-        if !self.caps.manage_apps || !self.mcp_agents.flag_on {
-            return;
-        }
-        let t = Tokens::get(ui.ctx());
-        sheet::panel(ui, tl!("AI agents"), |ui| {
-            note(
-                ui,
-                tl!(
-                    "While this is on, AI apps that use MCP, such as Claude, Cursor or LM Studio, can work with every installed Craft app through one entry. While it is off, no agent can reach them, and the entries added here are removed."
-                ),
-            );
-            ui.add_space(8.0);
-            let agents = self.mcp_agents.clone();
-            if !agents.gateway_found {
-                ui.label(RichText::new(tl!("The Craft gateway (craft-ai-mcp) is not installed beside the launcher.")).size(12.0).color(t.muted));
-                // Turning on needs the gateway; turning off and removing entries never does.
-                if !agents.enabled {
-                    return;
-                }
-            }
-            let mut on = agents.enabled;
-            if ui.checkbox(&mut on, tl!("Let AI agents use Craft apps")).changed() && on != agents.enabled {
-                self.act_command(Command::McpSetAgents { enabled: on });
-            }
-            if !agents.enabled {
-                return;
-            }
-            ui.label(RichText::new(tl!("Apps agents can reach: {count}").replace("{count}", &agents.apps.to_string())).size(12.0).color(t.muted));
-            ui.add_space(10.0);
-            ui.label(RichText::new(tl!("Quick install")).strong());
-            note(ui, tl!("Adds the Craft apps to that client. Restart the client afterwards."));
-            ui.add_space(4.0);
-            for c in &agents.clients {
-                self.draw_client_row(ui, &t, c, agents.gateway_found);
-            }
-            if let Some(gateway) = agents.gateway.as_deref() {
-                ui.add_space(10.0);
-                ui.label(RichText::new(tl!("Other clients")).strong());
-                note(ui, tl!("Copy the configuration and paste it into the client's MCP settings."));
-                ui.add_space(4.0);
-                ui.horizontal_wrapped(|ui| {
-                    for format in McpConfigFormat::ALL {
-                        let label = match format {
-                            McpConfigFormat::Json => tl!("Copy JSON"),
-                            McpConfigFormat::VsCode => tl!("Copy for VS Code"),
-                            McpConfigFormat::CodexToml => tl!("Copy for Codex (TOML)"),
-                        };
-                        if ui.button(label).clicked() {
-                            ui.ctx().copy_text(mcp_config(format, gateway));
-                            self.toast(tl!("Configuration copied."), false);
-                        }
-                    }
-                });
-            }
-        });
-    }
-
-    /// One MCP client: its name, and Add or Remove (or "Not installed" when it isn't). Add is
-    /// offered only while the gateway is there to add.
-    fn draw_client_row(&mut self, ui: &mut Ui, t: &Tokens, c: &McpClientState, can_add: bool) {
-        ui.horizontal(|ui| {
-            ui.label(c.name.as_str());
-            if c.added {
-                ui.label(RichText::new(tl!("Added")).size(12.0).color(t.muted));
-                if ui.button(tl!("Remove")).clicked() {
-                    self.act_command(Command::McpSetClient { client: c.client, added: false });
-                    self.mcp_restart_offer = None;
-                }
-            } else if c.installed && can_add {
-                if ui.button(tl!("Add")).clicked() {
-                    self.act_command(Command::McpSetClient { client: c.client, added: true });
-                    if c.restartable {
-                        self.mcp_restart_offer = Some(c.client);
-                    }
-                }
-            } else if !c.installed {
-                ui.label(RichText::new(tl!("Not installed")).size(12.0).color(t.muted));
-            }
-        });
-        // A client reads its MCP servers only when it starts: right after adding, say so and offer
-        // to do the restart, which people otherwise miss.
-        if c.added && c.restartable && self.mcp_restart_offer == Some(c.client) {
-            let name = [("client", c.name.as_str())];
-            note(
-                ui,
-                &fmt(
-                    tl!(
-                        "{client} loads its MCP servers only when it starts, so the Craft apps appear after a restart. Restarting closes {client}, including a reply it is still writing."
-                    ),
-                    &name,
-                ),
-            );
-            if ui.button(fmt(tl!("Restart {client}"), &name)).clicked() {
-                self.act_command(Command::McpRestartClient { client: c.client });
-                self.mcp_restart_offer = None;
-                self.toast(fmt(tl!("Restarting {client}…"), &name), false);
-            }
-            ui.add_space(4.0);
-        }
-    }
 }

@@ -1,7 +1,7 @@
-//! ArtCraft Launcher core: everything that is pure data and logic.
+//! D.E.V. Launcher core: everything that is pure data and logic.
 //!
 //! No I/O lives here, so the desktop shell, the web build and the tests share it unchanged:
-//! the Craft App Suite catalog, version handling, GitHub release parsing, choosing the right
+//! the D.E.V. App Suite catalog, version handling, GitHub release parsing, choosing the right
 //! download for a platform, and turning "what's installed" plus "what's released" into a status.
 
 #![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unimplemented, clippy::todo, clippy::unreachable)]
@@ -12,7 +12,6 @@ pub mod details;
 pub mod distro;
 pub mod feed;
 pub mod hosted_catalog;
-pub mod mcp_config;
 pub mod platform;
 pub mod protocol;
 pub mod release;

@@ -2,15 +2,15 @@
 
 use egui::ImageSource;
 
-/// The 128 px icon of a Craft App ([`catalog::app_icon_png`](artcraft_launcher_core::catalog::app_icon_png)).
+/// The 128 px icon of a Craft App ([`catalog::app_icon_png`](dev_launcher_core::catalog::app_icon_png)).
 pub fn app(id: &str) -> Option<ImageSource<'static>> {
-    let png = artcraft_launcher_core::catalog::app_icon_png(id)?;
+    let png = dev_launcher_core::catalog::app_icon_png(id)?;
     let revision = icon_revision(id);
     Some(ImageSource::Bytes { uri: format!("bytes://app-icons/{id}/{revision}.png").into(), bytes: png.into() })
 }
 
 fn icon_revision(id: &str) -> &'static str {
-    artcraft_launcher_core::hosted_catalog::metadata(id).map_or("bundled", |m| m.icon_sha256.as_str())
+    dev_launcher_core::hosted_catalog::metadata(id).map_or("bundled", |m| m.icon_sha256.as_str())
 }
 
 /// A Craft App's icon: in colour, or in greys for an app that is not installed. The grey copy is
@@ -49,37 +49,19 @@ fn desaturate(pixels: &mut [u8]) {
     }
 }
 
-/// The ArtCraft wordmark, as supplied: dark ink for light backgrounds, white for dark ones.
-/// An ArtCraft trademark, not covered by the MIT/Apache license (`docs/brand/LICENSE-brand.txt`).
-pub fn artcraft_logo(dark_background: bool) -> ImageSource<'static> {
-    if dark_background {
-        egui::include_image!("../../../docs/brand/artcraft-logo-white.svg")
-    } else {
-        egui::include_image!("../../../docs/brand/artcraft-logo.svg")
-    }
-}
-
-/// The ArtCraft wordmark's width / height (its SVG view box: 1038.05 × 108).
-pub const ARTCRAFT_LOGO_ASPECT: f32 = 1038.05 / 108.0;
-
-/// A social service's logo (Simple Icons, white, for tinting), by its name in `catalog::SOCIAL`.
+/// A link's logo (white, for tinting): GitHub, Discord and the website.
 pub fn social(service: &str) -> Option<ImageSource<'static>> {
     Some(match service {
-        "X" => egui::include_image!("../../../assets/social/x.svg"),
-        "YouTube" => egui::include_image!("../../../assets/social/youtube.svg"),
-        "TikTok" => egui::include_image!("../../../assets/social/tiktok.svg"),
-        "Instagram" => egui::include_image!("../../../assets/social/instagram.svg"),
         "GitHub" => egui::include_image!("../../../assets/social/github.svg"),
         "Discord" => egui::include_image!("../../../assets/social/discord.svg"),
         "Website" => egui::include_image!("../../../assets/social/globe.svg"),
-        "LinkedIn" => egui::include_image!("../../../assets/social/linkedin.svg"),
         _ => return None,
     })
 }
 
-/// The ArtCraft "A" mark in blue, as supplied: the launcher's app icon and getartcraft.com's favicon.
-pub fn artcraft_mark() -> ImageSource<'static> {
-    egui::include_image!("../../../docs/brand/artcraft-mark.svg")
+/// The D.E.V. Launcher mark (`assets/brand/dev-launcher-mark.svg`): the launcher's app icon.
+pub fn dev_mark() -> ImageSource<'static> {
+    egui::include_image!("../../../assets/brand/dev-launcher-mark.svg")
 }
 
 #[cfg(test)]
