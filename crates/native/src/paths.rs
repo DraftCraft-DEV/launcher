@@ -42,11 +42,6 @@ impl Paths {
         self.cache.join("feed.json")
     }
 
-    /// How long to hold off calling ArtCraft's API (after failures or HTTP 429), across restarts.
-    pub fn feed_throttle(&self) -> PathBuf {
-        self.cache.join("feed-throttle.json")
-    }
-
     /// A picture of an app's details page, saved after its first download: under the revision of the
     /// pictures repository it was fetched from, so a new revision never reads an old picture.
     pub fn screenshot(&self, app: &str, key: &str) -> PathBuf {

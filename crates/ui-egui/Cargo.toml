@@ -33,6 +33,7 @@ js-sys = "0.3"
 wasm-bindgen = "0.2"
 
 [dev-dependencies]
+artcraft-launcher-core = { workspace = true, features = ["test-catalog"] }
 # egui 0.37 no longer bundles its fallback faces by default; these tests install them
 # explicitly. Production also inherits `default_fonts` from eframe and the workspace's
 # `monochrome_emoji_fonts` feature.

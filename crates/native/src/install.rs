@@ -333,6 +333,7 @@ pub(crate) fn bind_artifact_version(app: &CraftApp, release: &Release, asset: &A
     let stems: Vec<&str> = app.stems().collect();
     if let Some(release_version) = release_version
         && let Some(parsed) = artcraft_launcher_core::platform::parse_asset_name(&asset.name, &stems)
+        && !parsed.version.is_empty()
         && version::parse(&parsed.version).as_ref() != Some(release_version)
     {
         return Err(mismatch());

@@ -88,7 +88,9 @@ pub(crate) fn appimage_version(name: &str, stems: &[&str]) -> Option<Option<Stri
         return Some(None);
     }
     let parsed = artcraft_launcher_core::platform::parse_asset_name(&format!("{base}.AppImage"), stems)?;
-    (parsed.kind == artcraft_launcher_core::PackageKind::AppImage && parsed.token.starts_with("linux-")).then_some(Some(parsed.version))
+    // A name without a version (DraftCraft's) says nothing about which release it is.
+    (parsed.kind == artcraft_launcher_core::PackageKind::AppImage && parsed.token.starts_with("linux-"))
+        .then(|| Some(parsed.version).filter(|v| !v.is_empty()))
 }
 
 /// Who our Windows Installer packages name as their publisher. A community app's names its own

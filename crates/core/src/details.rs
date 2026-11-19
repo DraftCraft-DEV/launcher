@@ -20,6 +20,9 @@ pub struct Shot {
     pub caption: &'static str,
 }
 
+/// Builds a catalog row's screenshot (`[[apps.details.shots]]` in `catalog.toml`). Today no row has
+/// any, so the generated catalog calls this only once one does.
+#[allow(dead_code)]
 const fn shot(key: &'static str, caption: &'static str) -> Shot {
     Shot { key, caption }
 }
@@ -49,7 +52,7 @@ const fn feature(title: &'static str, text: &'static str) -> Feature {
 /// Pinned to a tag (`SCREENSHOTS_REV`) so that what a launcher fetches never changes under it, and
 /// so that a saved copy never goes stale. To change a picture, publish a new tag and bump the
 /// revision: older launchers keep working from the tag they know.
-pub const SCREENSHOTS_BASE: &str = "https://raw.githubusercontent.com/storytold/craft-launcher-assets";
+pub const SCREENSHOTS_BASE: &str = "https://raw.githubusercontent.com/DraftCraft-DEV/launcher-assets";
 
 /// The tag of the pictures repository the launcher reads. Also part of the saved copies' path.
 pub const SCREENSHOTS_REV: &str = "v1";
@@ -145,7 +148,7 @@ impl AppDetails {
     }
 
     pub fn by_id(id: &str) -> Option<&'static AppDetails> {
-        crate::hosted_catalog::details(id).or_else(|| DETAILS.iter().find(|d| d.id == id))
+        crate::hosted_catalog::details(id).or_else(|| DETAILS.iter().chain(TEST_DETAILS.iter()).find(|d| d.id == id))
     }
 
     pub fn paragraphs(&self) -> impl Iterator<Item = &'static str> {
@@ -178,16 +181,17 @@ mod tests {
 
     #[test]
     fn picture_addresses_come_only_from_the_pages_own_pictures() {
-        let page = AppDetails::by_id("photocraft").unwrap();
+        const SHOTS: [Shot; 1] = [shot("demo", "A drawing")];
+        let page = AppDetails { id: "draftcraft", headline: "", about: "", features: &[], shots: &SHOTS, platforms: "" };
         assert_eq!(
             page.screenshot_url("demo").as_deref(),
-            Some("https://raw.githubusercontent.com/storytold/craft-launcher-assets/v1/photocraft/demo.jpg")
+            Some("https://raw.githubusercontent.com/DraftCraft-DEV/launcher-assets/v1/draftcraft/demo.jpg")
         );
-        for key in ["", "nope", "../vectorcraft/neon", "demo/../masks", "demo.jpg", "/etc/passwd", "demo?x=1", "demo#"] {
+        for key in ["", "nope", "../tracedraw/neon", "demo/../masks", "demo.jpg", "/etc/passwd", "demo?x=1", "demo#"] {
             assert_eq!(page.screenshot_url(key), None, "{key:?}");
         }
         // Every picture of every page has an address of the one shape, with nothing to escape.
-        for d in &DETAILS {
+        for d in DETAILS.iter().chain(std::iter::once(&page)) {
             for s in d.shots {
                 let url = d.screenshot_url(s.key).unwrap();
                 let path = url.strip_prefix(&format!("{SCREENSHOTS_BASE}/{SCREENSHOTS_REV}/")).unwrap();

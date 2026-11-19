@@ -54,12 +54,12 @@ fn optional(s: &Option<String>) -> String {
 fn slice(items: &[String]) -> String {
     format!("&{items:?}")
 }
-fn main() -> Result<(), Box<dyn Error>> {
-    println!("cargo:rerun-if-changed=catalog.toml");
-    let manifest: Manifest = toml::from_str(&fs::read_to_string("catalog.toml")?)?;
-    let mut apps = format!("pub const SUITE: [CraftApp; {}] = [\n", manifest.apps.len());
+/// The Rust source of one catalog: `pub const <suite>: [CraftApp; N]` and `pub const <details>: [AppDetails; M]`.
+fn generate(path: &str, suite: &str, details_name: &str) -> Result<(String, String), Box<dyn Error>> {
+    let manifest: Manifest = toml::from_str(&fs::read_to_string(path)?)?;
+    let mut apps = format!("pub const {suite}: [CraftApp; {}] = [\n", manifest.apps.len());
     let count = manifest.apps.iter().filter(|a| a.details.is_some()).count();
-    let mut details = format!("pub const DETAILS: [AppDetails; {count}] = [\n");
+    let mut details = format!("pub const {details_name}: [AppDetails; {count}] = [\n");
     for app in &manifest.apps {
         let kind = match app.kind.as_str() {
             "official" => "Official",
@@ -104,6 +104,23 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
     apps.push_str("];\n");
     details.push_str("];\n");
+    Ok((apps, details))
+}
+
+fn main() -> Result<(), Box<dyn Error>> {
+    println!("cargo:rerun-if-changed=catalog.toml");
+    println!("cargo:rerun-if-changed=tests/fixtures/test-catalog.toml");
+    let (mut apps, mut details) = generate("catalog.toml", "SUITE", "DETAILS")?;
+    // Test builds of the other crates turn on `test-catalog`: the upstream app list, so their
+    // tests can exercise former names and other publishers. Releases never do, and get none.
+    if env::var_os("CARGO_FEATURE_TEST_CATALOG").is_some() {
+        let (test_apps, test_details) = generate("tests/fixtures/test-catalog.toml", "TEST_SUITE", "TEST_DETAILS")?;
+        apps.push_str(&test_apps);
+        details.push_str(&test_details);
+    } else {
+        apps.push_str("pub const TEST_SUITE: [CraftApp; 0] = [];\n");
+        details.push_str("pub const TEST_DETAILS: [AppDetails; 0] = [];\n");
+    }
     let out = PathBuf::from(env::var_os("OUT_DIR").ok_or("OUT_DIR missing")?);
     fs::write(out.join("catalog.rs"), apps)?;
     fs::write(out.join("details.rs"), details)?;

@@ -1,16 +1,17 @@
-# DraftCraft Launcher: plan
+# D.E.V. Launcher: plan
 
-DraftCraft Launcher installs, updates and opens **DraftCraft** and **TraceDraw**. It is built from
+D.E.V. Launcher, by DraftCraft™ Engineering Ventures, installs, updates and opens **DraftCraft** and **TraceDraw**. It is built from
 ArtCraft Launcher (`storytold/craft-launcher`, MIT OR Apache-2.0), whose history this repository
 keeps so its contributors keep their credit. This page is the working plan. It goes once the
 launcher is done and `README.md` and `AGENTS.md` describe it.
 
 ## Decisions (owner, 2026-11-19)
 
-- **Name:** DraftCraft Launcher. Machine names `draftcraft-launcher`, `draftcraft-launcher-*`.
+- **Name:** D.E.V. Launcher (DraftCraft™ Engineering Ventures). Machine names `dev-launcher`,
+  `dev-launcher-*`. Its own icon, drawn for it: not DraftCraft's compass, which is DraftCraft's.
 - **App id:** `dev.draftcraft.Launcher` (reverse DNS of draftcraft.dev, which the owner controls).
-- **Marks:** DraftCraft™ is a trademark of DraftCraft Engineering Ventures, which lets this
-  project use the name and the app icon. ArtCraft's name, logo and "A" mark are ArtCraft's
+- **Marks:** DraftCraft™ is a trademark of DraftCraft Engineering Ventures, whose launcher this is;
+  DraftCraft's app icon shows on DraftCraft's card. ArtCraft's name, logo and "A" mark are ArtCraft's
   trademarks and leave the launcher entirely.
 - **Apps:**
   - DraftCraft, from `DraftCraft-DEV/DraftCraft`'s releases, as they are published today.
@@ -57,7 +58,7 @@ launcher is done and `README.md` and `AGENTS.md` describe it.
 7. **macOS:** an app whose DMG has no Developer ID signature is opened when present, not
    installed (the launcher's existing rule). Today that is TraceDraw, and DraftCraft until its
    builds are signed.
-8. **Rebrand:** names, app id, `User-Agent: DraftCraft-Launcher/<version>`, Windows registry key
+8. **Rebrand:** names, app id, `User-Agent: DEV-Launcher/<version>`, Windows registry key
    under `DraftCraft Engineering Ventures`, self-update from `DraftCraft-DEV/launcher`'s
    releases, every translation catalog, packaging (WiX, Info.plist, desktop file, metainfo,
    Flatpak, nfpm), icons (DraftCraft's compass icon; TraceDraw's own icon) with their

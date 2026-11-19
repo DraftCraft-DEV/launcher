@@ -1,12 +1,12 @@
-//! The Craft App Suite: bundled data with a signed hosted startup snapshot.
+//! The apps D.E.V. Launcher installs: DraftCraft and the approved community apps.
 //!
-//! The list is data so a later version can fetch it from an API; [`SUITE`] is the built-in copy.
+//! The list is data (`crates/core/catalog.toml`); [`SUITE`] is its built-in copy.
 //!
 //! Text here is English, the source the UI translates from: each `tagline` has a catalog row
 //! keyed by the app id (`tr_ctx(app.id, app.tagline)` in `ui-egui`).
 
 /// Who makes an app. Official apps live under [`GITHUB_OWNER`]; a community app is maintained
-/// outside ArtCraft and is labelled as such wherever it is shown.
+/// outside DraftCraft Engineering Ventures and is labelled as such wherever it is shown.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum AppKind {
     Official,
@@ -54,9 +54,9 @@ pub struct CraftApp {
 }
 
 impl CraftApp {
-    /// `ai.storyteller.<id>`: macOS bundle id, Flatpak id and Linux desktop-file id.
+    /// macOS bundle id, Flatpak id and Linux desktop-file id: the app's own, or `dev.draftcraft.<id>`.
     pub fn bundle_id(&self) -> String {
-        self.bundle.map_or_else(|| format!("ai.storyteller.{}", self.id), str::to_string)
+        self.bundle.map_or_else(|| format!("dev.draftcraft.{}", self.id), str::to_string)
     }
 
     pub fn releases_url(&self) -> String {
@@ -67,9 +67,9 @@ impl CraftApp {
         format!("https://github.com/{}", self.repo)
     }
 
-    /// The app's website: its page on getartcraft.com, or a community app's own site.
+    /// The app's website: its own site, or its repository.
     pub fn website(&self) -> String {
-        self.site.map_or_else(|| format!("https://getartcraft.com/apps/{}", self.id), str::to_string)
+        self.site.map_or_else(|| self.repo_url(), str::to_string)
     }
 
     /// Whether the launcher installs this app from a `kind` package.
@@ -78,11 +78,8 @@ impl CraftApp {
     }
 
     /// Whether this app runs on the given operating system.
-    pub fn runs_on(&self, os: crate::Os) -> bool {
-        match os {
-            crate::Os::FreeBsd => self.id != "artcraft",
-            _ => true,
-        }
+    pub fn runs_on(&self, _os: crate::Os) -> bool {
+        true
     }
 
     /// Bundle ids this app may be installed under, current first.
@@ -114,7 +111,7 @@ impl CraftApp {
     }
 
     pub fn by_id(id: &str) -> Option<&'static CraftApp> {
-        crate::hosted_catalog::apps().iter().find(|a| a.id == id)
+        crate::hosted_catalog::apps().iter().chain(SUITE.iter()).find(|a| a.id == id)
     }
 }
 
@@ -137,86 +134,63 @@ const fn app(
         former_names: &[],
         mac_bundle_name: None,
         kind: AppKind::Official,
-        publisher: "ArtCraft",
+        publisher: "DraftCraft Engineering Ventures",
         msi_publisher: None,
         bundle: None,
         former_bundles: &[],
         site: None,
-        mac_team: Some(ARTCRAFT_TEAM_ID),
+        mac_team: None,
     }
 }
 
-// The bundled suite, in website display order, then the approved community apps.
+// The bundled catalog, in display order: DraftCraft, then the approved community apps.
 include!(concat!(env!("OUT_DIR"), "/catalog.rs"));
 
-/// The Apple Developer team that signs every official Craft App and ArtCraft Launcher (Learning
-/// Machines LLC): the macOS side of the Windows publisher check.
-pub const ARTCRAFT_TEAM_ID: &str = "DJ6XS33FX8";
+/// The organization's website.
+pub const WEBSITE_URL: &str = "https://draftcraft.dev";
+/// The GitHub account every official app's repository lives under. The release feed can only
+/// move an app within it; a community app installs from its own repo, pinned in [`SUITE`].
+pub const GITHUB_OWNER: &str = "DraftCraft-DEV";
+/// DraftCraft Engineering Ventures on GitHub.
+pub const GITHUB_URL: &str = "https://github.com/DraftCraft-DEV";
+/// Social accounts: (service, URL), shown as small icons. None yet.
+pub const SOCIAL: [(&str, &str); 0] = [];
 
-/// ArtCraft's website.
-pub const WEBSITE_URL: &str = "https://getartcraft.com";
-/// The GitHub account every official Craft App's repository lives under. The release feed can
-/// only move an app within it; a community app installs from its own repo, pinned in [`SUITE`].
-pub const GITHUB_OWNER: &str = "storytold";
-/// ArtCraft on GitHub: every Craft App's source.
-pub const GITHUB_URL: &str = "https://github.com/storytold";
-/// ArtCraft's social accounts: (service, URL). Shown as small icons, less prominent than Discord.
-pub const SOCIAL: [(&str, &str); 5] = [
-    ("X", "https://x.com/get_artcraft"),
-    ("Instagram", "https://www.instagram.com/officialartcraftstudios"),
-    ("LinkedIn", "https://www.linkedin.com/company/artcraft-ai"),
-    ("YouTube", "https://www.youtube.com/@OfficialArtcraftStudios"),
-    ("TikTok", "https://www.tiktok.com/@artcraft.studios"),
-];
+/// The DraftCraft community on Discord.
+pub const DISCORD_URL: &str = "https://discord.gg/YgRK8Eww9x";
+/// Deep link into the Discord application for the same invite.
+pub const DISCORD_APP_URL: &str = "discord://-/invite/YgRK8Eww9x";
 
-/// The ArtCraft community on Discord.
-pub const DISCORD_URL: &str = "https://discord.gg/artcraft";
-/// Deep link into the Discord application for the ArtCraft server invite.
-pub const DISCORD_APP_URL: &str = "discord://-/invite/artcraft";
-
-/// ArtCraft Launcher itself, described like a Craft App so it can update itself with the same
-/// machinery (asset names `artcraft-launcher-<ver>-…`, bundle id `ai.storyteller.artcraft-launcher`,
-/// `ArtCraft Launcher.app`). Not part of [`SUITE`].
-pub const LAUNCHER: CraftApp = app(
-    "artcraft-launcher",
-    "ArtCraft Launcher",
-    "Installs and updates the Craft App Suite",
-    [[0x0b, 0x0b, 0x0c], [0x0b, 0x0b, 0x0c], [0xf2, 0xf1, 0xee]],
-    "storytold/craft-launcher",
-);
+/// D.E.V. Launcher itself, described like an app so it can update itself with the same machinery
+/// (asset names `dev-launcher-<ver>-…`, bundle id `dev.draftcraft.Launcher`, `D.E.V. Launcher.app`).
+/// Not part of [`SUITE`].
+pub const LAUNCHER: CraftApp = CraftApp {
+    bundle: Some("dev.draftcraft.Launcher"),
+    ..app(
+        "dev-launcher",
+        "D.E.V. Launcher",
+        "Installs and updates DraftCraft and its community apps",
+        [[0x1f, 0x5f, 0xaf], [0x18, 0x4a, 0x8c], [0x8d, 0xb8, 0xf0]],
+        "DraftCraft-DEV/launcher",
+    )
+};
 
 /// The launcher's own repo, checked so it can say when a newer launcher is out.
-pub const LAUNCHER_REPO: &str = "storytold/craft-launcher";
+pub const LAUNCHER_REPO: &str = "DraftCraft-DEV/launcher";
 /// The launcher's own asset stem.
-pub const LAUNCHER_ID: &str = "artcraft-launcher";
+pub const LAUNCHER_ID: &str = "dev-launcher";
 
-/// A Craft App's 128 px icon (PNG), as copied from its repo into `assets/app-icons`: the UI
-/// draws it, and the Linux install puts it in the desktop menu.
+/// An app's 128 px icon (PNG), as copied from its repo into `assets/app-icons`: the UI draws it,
+/// and the Linux install puts it in the desktop menu.
 pub fn app_icon_png(id: &str) -> Option<&'static [u8]> {
-    if let Some(icon) = crate::hosted_catalog::icon(id) {
-        return Some(icon);
+    // Test builds of the other crates: every fixture app borrows a real icon.
+    #[cfg(feature = "test-catalog")]
+    if TEST_SUITE.iter().any(|a| a.id == id) {
+        return Some(include_bytes!("../../../assets/app-icons/draftcraft.png"));
     }
     Some(match id {
-        "artcraft" => include_bytes!("../../../assets/app-icons/artcraft.png"),
-        "photocraft" => include_bytes!("../../../assets/app-icons/photocraft.png"),
-        "vectorcraft" => include_bytes!("../../../assets/app-icons/vectorcraft.png"),
-        "filmcraft" => include_bytes!("../../../assets/app-icons/filmcraft.png"),
-        "lightcraft" => include_bytes!("../../../assets/app-icons/lightcraft.png"),
-        "pdfcraft" => include_bytes!("../../../assets/app-icons/pdfcraft.png"),
-        "effectcraft" => include_bytes!("../../../assets/app-icons/effectcraft.png"),
-        "anicraft" => include_bytes!("../../../assets/app-icons/anicraft.png"),
-        "designcraft" => include_bytes!("../../../assets/app-icons/designcraft.png"),
-        "wordcraft" => include_bytes!("../../../assets/app-icons/wordcraft.png"),
-        "deckcraft" => include_bytes!("../../../assets/app-icons/deckcraft.png"),
-        "gridcraft" => include_bytes!("../../../assets/app-icons/gridcraft.png"),
-        "texturecraft" => include_bytes!("../../../assets/app-icons/texturecraft.png"),
-        "materialcraft" => include_bytes!("../../../assets/app-icons/materialcraft.png"),
-        "craft-anything" => include_bytes!("../../../assets/app-icons/craft-anything.png"),
-        "solidcraft" => include_bytes!("../../../assets/app-icons/solidcraft.png"),
-        "mailcraft" => include_bytes!("../../../assets/app-icons/mailcraft.png"),
-        "cadcraft" => include_bytes!("../../../assets/app-icons/cadcraft.png"),
-        "soundcraft" => include_bytes!("../../../assets/app-icons/soundcraft.png"),
-        "figcraft" => include_bytes!("../../../assets/app-icons/figcraft.png"),
+        "draftcraft" => include_bytes!("../../../assets/app-icons/draftcraft.png"),
+        "tracedraw" => include_bytes!("../../../assets/app-icons/tracedraw.png"),
         _ => return None,
     })
 }
@@ -234,126 +208,52 @@ mod tests {
         assert!(app_icon_png("notacraft").is_none());
     }
 
-    /// Every catalog entry must have a distinct lookup key.
+    /// The catalog is DraftCraft and TraceDraw, each pinned to its own repository.
     #[test]
-    fn suite_has_nineteen_apps_with_unique_ids() {
-        assert_eq!(SUITE.len(), 19);
-        let mut ids: Vec<_> = SUITE.iter().map(|a| a.id).collect();
-        ids.sort_unstable();
-        ids.dedup();
-        assert_eq!(ids.len(), SUITE.len());
+    fn catalog_is_draftcraft_and_tracedraw() {
+        let ids: Vec<_> = SUITE.iter().map(|a| a.id).collect();
+        assert_eq!(ids, ["draftcraft", "tracedraw"]);
         for a in &SUITE {
-            // `Craft Anything` is `craft-anything`.
-            assert_eq!(a.name.to_lowercase().replace(' ', "-"), a.id);
+            assert_eq!(a.name.to_lowercase(), a.id);
             match a.kind {
-                AppKind::Official => assert_eq!(a.repo, format!("storytold/{}", a.id)),
-                AppKind::Community => assert!(!a.repo.starts_with("storytold/"), "{} is community", a.id),
+                AppKind::Official => assert!(a.repo.starts_with(&format!("{GITHUB_OWNER}/")), "{} is official", a.id),
+                AppKind::Community => assert!(!a.repo.starts_with(&format!("{GITHUB_OWNER}/")), "{} is community", a.id),
             }
         }
     }
 
     #[test]
-    fn solidcraft_is_a_community_app_with_its_own_bundle_id() {
-        let sc = CraftApp::by_id("solidcraft").unwrap();
-        assert_eq!(sc.kind, AppKind::Community);
-        assert_eq!(sc.repo, "tangency-labs/solidcraft");
-        assert_eq!(sc.bundle_id(), "io.tangencylabs.solidcraft");
-        assert_eq!(sc.bundle_ids().collect::<Vec<_>>(), ["io.tangencylabs.solidcraft", "ai.storyteller.solidcraft", "ai.storyteller.solvecraft"]);
-        assert_eq!(CraftApp::by_id("gridcraft").unwrap().bundle_id(), "ai.storyteller.gridcraft");
-        assert_eq!(CraftApp::by_id("gridcraft").unwrap().kind, AppKind::Official);
-        assert_eq!(sc.website(), "https://solidcraft.io");
-        assert!(sc.installs(crate::PackageKind::Dmg) && sc.installs(crate::PackageKind::Msi) && sc.installs(crate::PackageKind::Flatpak));
-        assert_eq!(sc.mac_team, Some("G5QA5U5X2S"));
-        assert_eq!(CraftApp::by_id("gridcraft").unwrap().mac_team, Some(ARTCRAFT_TEAM_ID));
+    fn draftcraft_installs_from_its_own_repository() {
+        let dc = CraftApp::by_id("draftcraft").unwrap();
+        assert_eq!((dc.kind, dc.repo), (AppKind::Official, "DraftCraft-DEV/DraftCraft"));
+        assert_eq!(dc.bundle_id(), "dev.skryx.draftcraft");
+        assert_eq!(dc.msi_publisher, Some("Skryx Dev"));
+        assert_eq!(dc.website(), "https://github.com/DraftCraft-DEV/DraftCraft");
     }
 
     #[test]
-    fn mailcraft_is_a_community_app_not_installed_on_mac() {
-        let mc = CraftApp::by_id("mailcraft").unwrap();
-        assert_eq!(mc.kind, AppKind::Community);
-        assert_eq!(mc.repo, "UCS-Care-Group/mailcraft");
-        assert_eq!(mc.bundle_id(), "io.github.billsecond.mailcraft");
-        assert_eq!(mc.website(), "https://mailcraft.work");
-        assert!(!mc.installs(crate::PackageKind::Dmg));
-        assert!(mc.installs(crate::PackageKind::Msi) && mc.installs(crate::PackageKind::Flatpak));
+    fn tracedraw_is_a_community_app_from_its_official_releases() {
+        let td = CraftApp::by_id("tracedraw").unwrap();
+        assert_eq!((td.kind, td.repo), (AppKind::Community, "tracedraw/tracedraw"));
+        assert_eq!(td.bundle_id(), "dev.tracedraw.app");
+        assert_eq!(td.msi_publisher, Some("TraceDraw"));
+    }
+
+    /// No Developer ID team is known for either app's macOS builds yet, so neither DMG is
+    /// installed: a copy that's there is opened, and the card links to the releases.
+    #[test]
+    fn no_mac_install_without_a_known_signing_team() {
+        for a in &SUITE {
+            assert_eq!(a.mac_team, None, "{}", a.id);
+            assert!(!a.installs(crate::PackageKind::Dmg), "{}", a.id);
+            assert!(a.installs(crate::PackageKind::PortableZip) && a.installs(crate::PackageKind::AppImage), "{}", a.id);
+        }
     }
 
     #[test]
-    fn texturecraft_is_an_official_app() {
-        let app = CraftApp::by_id("texturecraft").unwrap();
-        assert_eq!(app.kind, AppKind::Official);
-        assert_eq!(app.repo, "storytold/texturecraft");
-        assert_eq!(app.bundle_id(), "ai.storyteller.texturecraft");
-        assert_eq!(app.website(), "https://getartcraft.com/apps/texturecraft");
-        assert_eq!(app.mac_team, Some(ARTCRAFT_TEAM_ID));
-    }
-
-    #[test]
-    fn materialcraft_is_an_official_app() {
-        let app = CraftApp::by_id("materialcraft").unwrap();
-        assert_eq!(app.kind, AppKind::Official);
-        assert_eq!(app.repo, "storytold/materialcraft");
-        assert_eq!(app.bundle_id(), "ai.storyteller.materialcraft");
-        assert_eq!(app.website(), "https://getartcraft.com/apps/materialcraft");
-        assert_eq!(app.mac_team, Some(ARTCRAFT_TEAM_ID));
-    }
-
-    #[test]
-    fn anicraft_is_an_official_app() {
-        let app = CraftApp::by_id("anicraft").expect("anicraft");
-        assert_eq!(
-            (app.kind, app.repo, app.bundle_id(), app.mac_team),
-            (AppKind::Official, "storytold/anicraft", "ai.storyteller.anicraft".into(), Some(ARTCRAFT_TEAM_ID))
-        );
-        assert_eq!(app.website(), "https://github.com/storytold/anicraft");
-    }
-
-    #[test]
-    fn craft_anything_is_an_official_app() {
-        let ca = CraftApp::by_id("craft-anything").unwrap();
-        assert_eq!(ca.kind, AppKind::Official);
-        assert_eq!(ca.repo, "storytold/craft-anything");
-        assert_eq!(ca.bundle_id(), "ai.storyteller.craft-anything");
-        assert_eq!(ca.website(), "https://getartcraft.com/apps/craft-anything");
-        assert_eq!(ca.mac_team, Some(ARTCRAFT_TEAM_ID));
-    }
-
-    #[test]
-    fn pdfcraft_also_answers_to_printcraft() {
-        let pdf = CraftApp::by_id("pdfcraft").unwrap();
-        assert_eq!(pdf.stems().collect::<Vec<_>>(), ["pdfcraft", "printcraft"]);
-        assert_eq!(pdf.names().collect::<Vec<_>>(), ["PdfCraft", "PrintCraft"]);
-        assert_eq!(pdf.website(), "https://getartcraft.com/apps/pdfcraft");
-        assert_eq!(CraftApp::by_id("wordcraft").unwrap().website(), "https://getartcraft.com/apps/wordcraft");
-    }
-
-    /// Apps can specify custom macOS bundle names and platform support.
-    #[test]
-    fn mac_bundle_names_and_platform_support() {
-        let photo = CraftApp::by_id("photocraft").unwrap();
-        assert_eq!(photo.mac_bundle_name(), "PhotoCraft");
-        assert_eq!(photo.mac_bundle_names().collect::<Vec<_>>(), ["PhotoCraft"]);
-        assert!(photo.runs_on(crate::Os::FreeBsd));
-        assert!(photo.runs_on(crate::Os::Linux));
-        assert!(photo.runs_on(crate::Os::MacOs));
-        assert!(photo.runs_on(crate::Os::Windows));
-
-        let custom = CraftApp {
-            former_names: &["ArtCraft"],
-            mac_bundle_name: Some("ArtCraft"),
-            ..app(
-                "artcraft",
-                "ArtCraft Studio",
-                "AI image and video creation",
-                [[47, 123, 245], [26, 91, 196], [127, 176, 255]],
-                "storytold/artcraft",
-            )
-        };
-        assert_eq!(custom.mac_bundle_name(), "ArtCraft");
-        assert_eq!(custom.mac_bundle_names().collect::<Vec<_>>(), ["ArtCraft", "ArtCraft Studio"]);
-        assert!(!custom.runs_on(crate::Os::FreeBsd));
-        assert!(custom.runs_on(crate::Os::Linux));
-        assert!(custom.runs_on(crate::Os::MacOs));
-        assert!(custom.runs_on(crate::Os::Windows));
+    fn the_launcher_is_dev_launcher() {
+        assert_eq!((LAUNCHER.id, LAUNCHER.name, LAUNCHER.repo), ("dev-launcher", "D.E.V. Launcher", "DraftCraft-DEV/launcher"));
+        assert_eq!(LAUNCHER.bundle_id(), "dev.draftcraft.Launcher");
+        assert_eq!(LAUNCHER_REPO, LAUNCHER.repo);
     }
 }

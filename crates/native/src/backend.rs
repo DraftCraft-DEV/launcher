@@ -15,7 +15,6 @@ use artcraft_launcher_core::protocol::{
 use artcraft_launcher_core::release::{Asset, Release};
 use artcraft_launcher_core::{CraftApp, Installed, PackageKind, version};
 
-use crate::feed_throttle::{self, FeedThrottle, Outcome};
 use crate::http::{self, Http, Stop};
 use crate::install::{self, Job};
 use crate::manifest::Manifest;
@@ -32,19 +31,6 @@ const FRESH_FOR: i64 = 4 * 60;
 /// Once every app has loaded, GitHub is asked about an app the feed can't vouch for at most this
 /// often (pressing Refresh asks right away).
 const GITHUB_FALLBACK_EVERY: i64 = 60 * 60;
-/// Until every app has loaded once, GitHub may be asked a little more eagerly.
-const EARLY_GITHUB_EVERY: i64 = 5 * 60;
-/// Tries at the feed per check (after the very first poll). The pause between tries is the
-/// [`FeedThrottle`]'s: seconds during the first load, so a check retries; a minute or more after
-/// that, so a check then tries once and the retries come from the next checks.
-const FEED_ATTEMPTS: usize = 3;
-/// The longest a check waits on the [`FeedThrottle`] before carrying on without the feed.
-const MAX_THROTTLE_WAIT: i64 = 10;
-/// After everything has loaded, the feed counts as seriously failed (and GitHub takes over)
-/// only after this many checks in a row without an answer…
-const SERIOUS_FEED_FAILURES: u32 = 3;
-/// …and this long without a good answer.
-const SERIOUS_FEED_OUTAGE: i64 = 60 * 60;
 /// Requests in flight at once during a check.
 const WORKERS: usize = 4;
 
@@ -104,12 +90,6 @@ struct Shared {
     answered: Mutex<std::collections::HashSet<String>>,
     /// Every app has had an answer at least once: from then on GitHub is asked sparingly.
     loaded: AtomicBool,
-    /// Checks in a row in which the feed didn't answer.
-    feed_failures: Mutex<u32>,
-    /// When the feed last answered (Unix seconds).
-    feed_ok_at: Mutex<Option<i64>>,
-    /// How often ArtCraft's API may be called.
-    feed_throttle: Mutex<FeedThrottle>,
     /// Apps whose details pictures are on their way (a second request meanwhile does nothing).
     pictures_busy: Mutex<std::collections::HashSet<&'static str>>,
 }
@@ -289,9 +269,6 @@ impl NativeBackend {
             github_asked: Mutex::new(HashMap::new()),
             answered: Mutex::new(std::collections::HashSet::new()),
             loaded: AtomicBool::new(false),
-            feed_failures: Mutex::new(0),
-            feed_ok_at: Mutex::new(None),
-            feed_throttle: Mutex::new(FeedThrottle::load(&paths.feed_throttle(), crate::now())),
             pictures_busy: Mutex::new(std::collections::HashSet::new()),
             last_check: Mutex::new(None),
         });
@@ -380,9 +357,8 @@ impl NativeBackend {
         });
     }
 
-    /// Looks up the latest releases: ArtCraft's release feed first (one request for every app),
-    /// GitHub for anything the feed can't vouch for (apps it doesn't list, entries more than a
-    /// day old, or no answer at all), at most once an hour per app unless `force`.
+    /// Looks up the latest releases on GitHub (or a developer's local mirror), at most once an
+    /// hour per app unless `force`.
     fn check(&self, force: bool) {
         let (Some(source), Some(http)) = (self.source.clone(), self.http.clone()) else {
             crate::hosted_catalog::load_once(None, &self.paths);
@@ -1174,11 +1150,10 @@ fn check_plan(http: &Http, mirror: Option<&String>, pre: bool, paths: &Paths, sh
     if let Some(base) = mirror {
         // A local mirror answers for everything: GitHub is never asked.
         (local_feed(http, base), Fallback { trust_feed: true, github_every: GITHUB_FALLBACK_EVERY })
-    } else if pre {
-        // The feed serves stable releases only; with pre-releases on, GitHub decides.
-        (None, Fallback { trust_feed: false, github_every: EARLY_GITHUB_EVERY })
     } else {
-        feed_and_fallback(http, paths, shared)
+        // There is no release feed: GitHub answers for every app, stable or pre-release.
+        let _ = (http, pre, paths, shared);
+        (None, Fallback { trust_feed: false, github_every: GITHUB_FALLBACK_EVERY })
     }
 }
 
@@ -1281,51 +1256,7 @@ struct Fallback {
     github_every: i64,
 }
 
-/// Asks the feed (retrying, except on the very first poll) and decides how much to lean on
-/// GitHub this time:
-///
-/// - The very first poll (nothing has ever loaded, nothing saved): one try, then GitHub at once,
-///   so the window fills.
-/// - Until every app has loaded once: if the feed doesn't answer after its retries, GitHub is
-///   asked fairly freely (every 5 minutes per app).
-/// - After that: the feed's last answer stands in while it fails, and GitHub is asked only for
-///   apps the feed doesn't list or hasn't refreshed in a day, or once the feed has seriously
-///   failed (several checks in a row and an hour without an answer); then hourly per app.
-fn feed_and_fallback(http: &Http, paths: &Paths, shared: &Shared) -> (Option<Feed>, Fallback) {
-    let saved = load_feed(paths);
-    let loaded = shared.loaded.load(Ordering::SeqCst);
-    let first_time = !loaded && saved.is_none();
-    let attempts = if first_time { 1 } else { FEED_ATTEMPTS };
-    let fetched = fetch_feed(http, paths, &feed_url(), &shared.feed_throttle, attempts);
-    let now = crate::now();
-    let (fresh, answered, failures) = {
-        let mut failures = shared.feed_failures.lock().unwrap_or_else(PoisonError::into_inner);
-        match fetched {
-            FeedFetch::Answered(feed) => {
-                *failures = 0;
-                *shared.feed_ok_at.lock().unwrap_or_else(PoisonError::into_inner) = Some(now);
-                (Some(feed), true, 0)
-            }
-            FeedFetch::Failed => {
-                *failures = failures.saturating_add(1);
-                (None, false, *failures)
-            }
-            // Not asked this time: things stand as the last request left them.
-            FeedFetch::Held => (None, *failures == 0 && saved.is_some(), *failures),
-        }
-    };
-    let ok_at = *shared.feed_ok_at.lock().unwrap_or_else(PoisonError::into_inner);
-    let fallback = decide_fallback(answered, loaded, first_time, failures, ok_at, now);
-    (fresh.or(saved), fallback)
-}
 
-/// The policy in [`feed_and_fallback`], on its own so it can be tested.
-fn decide_fallback(answered: bool, loaded: bool, first_time: bool, failures: u32, ok_at: Option<i64>, now: i64) -> Fallback {
-    let github_every = if loaded { GITHUB_FALLBACK_EVERY } else { EARLY_GITHUB_EVERY };
-    let seriously_failed =
-        !answered && (first_time || !loaded || (failures >= SERIOUS_FEED_FAILURES && ok_at.is_none_or(|t| now - t >= SERIOUS_FEED_OUTAGE)));
-    Fallback { trust_feed: !seriously_failed, github_every }
-}
 
 /// The latest release of `app`, which service it came from, and the GitHub route used (for the
 /// rate-limit notice): the feed when it's trusted and vouches for the app, else GitHub if it's
@@ -1388,85 +1319,6 @@ fn limit_notice(source_used: Source, limited_until: Option<i64>) -> Option<i64> 
 /// The repo to ask GitHub about, following the feed's repo renames.
 fn feed_repo(feed: Option<&Feed>, app: &CraftApp) -> String {
     feed.map_or_else(|| app.repo.to_string(), |f| f.repo_for(app))
-}
-
-/// What came of asking the feed during one check.
-enum FeedFetch {
-    Answered(Feed),
-    /// Asked, without a good answer.
-    Failed,
-    /// Not asked: the [`FeedThrottle`] said to hold off.
-    Held,
-}
-
-/// Asks ArtCraft's release feed up to `attempts` times, as often as `throttle` allows (waiting at
-/// most [`MAX_THROTTLE_WAIT`] for it), saving a good answer.
-fn fetch_feed(http: &Http, paths: &Paths, url: &str, throttle: &Mutex<FeedThrottle>, attempts: usize) -> FeedFetch {
-    let mut asked = false;
-    for attempt in 0..attempts.max(1) {
-        let wait = throttle.lock().unwrap_or_else(PoisonError::into_inner).wait(crate::now());
-        if wait > MAX_THROTTLE_WAIT {
-            if !asked {
-                log::info!("holding off the ArtCraft API for {wait} s");
-            }
-            break;
-        }
-        if wait > 0 {
-            std::thread::sleep(Duration::from_secs(wait.unsigned_abs()));
-        }
-        {
-            let mut throttle = throttle.lock().unwrap_or_else(PoisonError::into_inner);
-            let now = crate::now();
-            if throttle.wait(now) > 0 {
-                break;
-            }
-            throttle.sending(now);
-        }
-        asked = true;
-        let outcome = match http.get_feed(url) {
-            Ok(body) => match Feed::parse(&body) {
-                Some(feed) => {
-                    if let Err(e) = crate::paths::write_atomic(&paths.feed_cache(), body.as_bytes()) {
-                        log::warn!("couldn't save the release feed: {e}");
-                    }
-                    throttle.lock().unwrap_or_else(PoisonError::into_inner).finished(Outcome::Answered, crate::now(), 0.0);
-                    return FeedFetch::Answered(feed);
-                }
-                None => {
-                    log::warn!("the release feed answered with something unreadable (try {})", attempt + 1);
-                    Outcome::Failed { retry_after: None }
-                }
-            },
-            Err(e) if e.throttled => {
-                log::warn!("the ArtCraft API asked us to slow down (HTTP 429); holding off");
-                Outcome::Throttled { retry_after: e.retry_after }
-            }
-            Err(e) => {
-                log::info!("release feed unavailable (try {}): {}", attempt + 1, e.why);
-                Outcome::Failed { retry_after: e.retry_after }
-            }
-        };
-        throttle.lock().unwrap_or_else(PoisonError::into_inner).finished(outcome, crate::now(), feed_throttle::jitter());
-        if matches!(outcome, Outcome::Throttled { .. }) {
-            break;
-        }
-    }
-    if asked { FeedFetch::Failed } else { FeedFetch::Held }
-}
-
-/// The feed's address. `ARTCRAFT_LAUNCHER_FEED_URL` points at a staging server or a local copy
-/// (only `https://`, or plain `http://` on localhost).
-fn feed_url() -> String {
-    std::env::var("ARTCRAFT_LAUNCHER_FEED_URL")
-        .ok()
-        .filter(|u| feed_url_override_allowed(u, cfg!(feature = "local-mirror")))
-        .unwrap_or_else(|| artcraft_launcher_core::feed::FEED_URL.to_string())
-}
-
-fn feed_url_override_allowed(url: &str, local_mirror: bool) -> bool {
-    // A loopback feed is a staging affordance, so it needs the same opt-in as the local mirror;
-    // release builds must not accept a plaintext feed chosen by the environment.
-    local_mirror && (is_loopback(url) || url.starts_with("https://"))
 }
 
 use crate::http::is_loopback;
@@ -1983,17 +1835,6 @@ mod tests {
         assert!(!release_matches_track(&release, &VersionTrack::Stable, false));
     }
 
-    #[test]
-    fn feed_url_overrides_are_loopback_only_outside_local_mirror_builds() {
-        assert!(!feed_url_override_allowed("http://127.0.0.1:8787/release_info.json", false));
-        assert!(!feed_url_override_allowed("http://localhost:8787/release_info.json", false));
-        assert!(feed_url_override_allowed("http://127.0.0.1:8787/release_info.json", true));
-        assert!(feed_url_override_allowed("http://localhost:8787/release_info.json", true));
-        assert!(!feed_url_override_allowed("https://staging.example/release_info.json", false));
-        assert!(feed_url_override_allowed("https://staging.example/release_info.json", true));
-        assert!(!feed_url_override_allowed("http://attacker.example/release_info.json", true));
-    }
-
     /// GitHub, counting how often it's asked.
     #[derive(Default)]
     struct CountingGitHub(AtomicUsize);
@@ -2035,64 +1876,8 @@ mod tests {
             github_asked: Mutex::new(HashMap::new()),
             answered: Mutex::new(std::collections::HashSet::new()),
             loaded: AtomicBool::new(false),
-            feed_failures: Mutex::new(0),
-            feed_ok_at: Mutex::new(None),
-            feed_throttle: Mutex::new(FeedThrottle::new()),
             pictures_busy: Mutex::new(std::collections::HashSet::new()),
         }
-    }
-
-    /// A local server answering every request with `status` (and `Retry-After: 120` on a 429),
-    /// counting the requests.
-    fn serve(status: &'static str) -> (String, Arc<AtomicUsize>) {
-        use std::io::{Read, Write};
-        let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
-        let url = format!("http://{}/v1/craft_apps/release_info", listener.local_addr().unwrap());
-        let hits = Arc::new(AtomicUsize::new(0));
-        let counted = hits.clone();
-        std::thread::spawn(move || {
-            for stream in listener.incoming() {
-                let Ok(mut stream) = stream else { continue };
-                let mut buf = [0u8; 4096];
-                let _ = stream.read(&mut buf);
-                counted.fetch_add(1, Ordering::SeqCst);
-                let extra = if status.starts_with("429") { "Retry-After: 120\r\n" } else { "" };
-                let _ = write!(stream, "HTTP/1.1 {status}\r\n{extra}Content-Length: 0\r\nConnection: close\r\n\r\n");
-            }
-        });
-        (url, hits)
-    }
-
-    #[test]
-    fn a_429_stops_the_retries_and_holds_off_the_api() {
-        let (url, hits) = serve("429 Too Many Requests");
-        let dir = tempfile::tempdir().unwrap();
-        let paths = Paths::under(dir.path());
-        let http = Http::new().unwrap();
-        let throttle = Mutex::new(FeedThrottle::load(&paths.feed_throttle(), crate::now()));
-        assert!(matches!(fetch_feed(&http, &paths, &url, &throttle, FEED_ATTEMPTS), FeedFetch::Failed));
-        assert_eq!(hits.load(Ordering::SeqCst), 1);
-        // The next checks (and a relaunch) don't call it at all.
-        assert!(matches!(fetch_feed(&http, &paths, &url, &throttle, FEED_ATTEMPTS), FeedFetch::Held));
-        let relaunched = Mutex::new(FeedThrottle::load(&paths.feed_throttle(), crate::now()));
-        assert!(matches!(fetch_feed(&http, &paths, &url, &relaunched, FEED_ATTEMPTS), FeedFetch::Held));
-        assert_eq!(hits.load(Ordering::SeqCst), 1);
-    }
-
-    #[test]
-    fn a_failing_api_is_retried_quickly_only_during_the_first_load() {
-        let (url, hits) = serve("503 Service Unavailable");
-        let dir = tempfile::tempdir().unwrap();
-        let paths = Paths::under(dir.path());
-        let http = Http::new().unwrap();
-        let throttle = Mutex::new(FeedThrottle::new());
-        // First load: three tries, a couple of seconds apart.
-        assert!(matches!(fetch_feed(&http, &paths, &url, &throttle, FEED_ATTEMPTS), FeedFetch::Failed));
-        assert_eq!(hits.load(Ordering::SeqCst), 3);
-        // Once the server has answered, never more than one a minute.
-        throttle.lock().unwrap().finished(Outcome::Answered, crate::now(), 0.0);
-        assert!(matches!(fetch_feed(&http, &paths, &url, &throttle, FEED_ATTEMPTS), FeedFetch::Held));
-        assert_eq!(hits.load(Ordering::SeqCst), 3);
     }
 
     const NOW: i64 = 1_791_500_000;
@@ -2118,36 +1903,6 @@ mod tests {
         assert_eq!(limit_notice(Source::GitHubPages, until), until);
         assert_eq!(limit_notice(Source::Cache, until), until);
         assert_eq!(limit_notice(Source::Cache, None), None);
-    }
-
-    #[test]
-    fn the_first_poll_tries_once_and_falls_back_at_once() {
-        // Nothing has ever loaded and the feed didn't answer: GitHub, freely.
-        let f = decide_fallback(false, false, true, 1, None, NOW);
-        assert_eq!(f, Fallback { trust_feed: false, github_every: EARLY_GITHUB_EVERY });
-        // The feed answered: trust it.
-        assert!(decide_fallback(true, false, true, 0, Some(NOW), NOW).trust_feed);
-    }
-
-    #[test]
-    fn before_everything_loads_github_is_asked_more_eagerly() {
-        // A saved feed but not everything loaded yet, and the feed isn't answering.
-        let f = decide_fallback(false, false, false, 1, None, NOW);
-        assert_eq!(f, Fallback { trust_feed: false, github_every: EARLY_GITHUB_EVERY });
-    }
-
-    #[test]
-    fn after_loading_github_waits_for_a_serious_feed_failure() {
-        // A blip or two: keep showing the feed's last answer.
-        for failures in 1..SERIOUS_FEED_FAILURES {
-            let f = decide_fallback(false, true, false, failures, Some(NOW - 10 * 60), NOW);
-            assert_eq!(f, Fallback { trust_feed: true, github_every: GITHUB_FALLBACK_EVERY }, "{failures}");
-        }
-        // Several checks in a row, but it answered recently: still trusted.
-        assert!(decide_fallback(false, true, false, SERIOUS_FEED_FAILURES, Some(NOW - 20 * 60), NOW).trust_feed);
-        // Several checks in a row and an hour without an answer: GitHub takes over, hourly.
-        let f = decide_fallback(false, true, false, SERIOUS_FEED_FAILURES, Some(NOW - SERIOUS_FEED_OUTAGE), NOW);
-        assert_eq!(f, Fallback { trust_feed: false, github_every: GITHUB_FALLBACK_EVERY });
     }
 
     #[test]
@@ -2717,7 +2472,7 @@ mod tests {
         let Some(platform) = native_platform() else { return };
         let dir = tempfile::tempdir().unwrap();
         let mut backend = backend(dir.path(), platform, None);
-        let ids: Vec<&str> = artcraft_launcher_core::SUITE.iter().filter(|app| app.runs_on(platform.os)).map(|app| app.id).take(3).collect();
+        let ids: Vec<&str> = artcraft_launcher_core::hosted_catalog::apps().iter().filter(|app| app.runs_on(platform.os)).map(|app| app.id).take(3).collect();
         assert_eq!(ids.len(), 3);
         type Held = Vec<Box<dyn FnOnce() + Send>>;
         let held: Arc<Mutex<Held>> = Arc::default();

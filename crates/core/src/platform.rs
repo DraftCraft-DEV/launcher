@@ -1,7 +1,9 @@
 //! Platforms, package formats, and choosing the right release asset.
 //!
-//! Every Craft App release names its files `<app>-<version>-<os>-<arch>[-portable].<ext>`, for
-//! example `photocraft-0.5.0-windows-x64.msi` or `photocraft-0.5.0-linux-aarch64.AppImage`.
+//! Release files are named `<app>-<version>-<os>-<arch>[-portable].<ext>`, for example
+//! `tracedraw-0.48.0-windows-x64-portable.zip` or `tracedraw-0.48.0-linux-arm64.AppImage`. DraftCraft
+//! names them without the version (`draftcraft-windows-x64.zip`, `draftcraft-linux-aarch64.AppImage`):
+//! the release's tag carries it.
 //!
 //! Labels are English. The UI translates [`PackageKind::label`]; OS and architecture names are
 //! shown as they are.
@@ -150,7 +152,7 @@ impl Platform {
             (Os::MacOs, Arch::X64) => &["macos-universal", "macos-x86_64"],
             (Os::MacOs, Arch::Arm64) => &["macos-universal", "macos-aarch64", "macos-arm64", "macos-x86_64"],
             (Os::Linux, Arch::X64) => &["linux-x86_64"],
-            (Os::Linux, Arch::Arm64) => &["linux-aarch64"],
+            (Os::Linux, Arch::Arm64) => &["linux-aarch64", "linux-arm64"],
             (Os::Linux, Arch::Riscv64) => &["linux-riscv64"],
             (Os::FreeBsd, Arch::X64) => &["freebsd-x86_64"],
             (Os::FreeBsd, Arch::Arm64) => &["freebsd-aarch64"],
@@ -183,6 +185,7 @@ impl Platform {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct AssetName {
     pub stem: String,
+    /// The version the name carries, or `""` for a name without one (DraftCraft's).
     pub version: String,
     pub token: String,
     pub kind: PackageKind,
@@ -211,9 +214,22 @@ fn strip_stem_prefix<'a>(base: &'a str, stem: &str, sep: char) -> Option<&'a str
     }
 }
 
-/// Reads `<stem>-<version>-<os>-<arch>[-portable].<ext>` or Studio's `<Stem>_<version>_<arch>[_<locale>].<ext>`;
-/// `None` for checksums, zsync files, CLI and web bundles, or anything else.
+/// The operating systems a release file name can name.
+const OS_TOKENS: [&str; 4] = ["windows", "macos", "linux", "freebsd"];
+
+/// `<os>-<arch>` with a known OS and an architecture without `-`, as a token.
+fn os_arch_token(rest: &str) -> Option<String> {
+    let (os, arch) = rest.split_once('-')?;
+    (OS_TOKENS.contains(&os) && !arch.is_empty() && !arch.contains('-')).then(|| format!("{os}-{arch}"))
+}
+
+/// Reads `<stem>-<version>-<os>-<arch>[-portable].<ext>`, the versionless `<stem>-<os>-<arch>.<ext>`
+/// (a Windows `.zip` is then the portable build), or Studio's `<Stem>_<version>_<arch>[_<locale>].<ext>`;
+/// `None` for checksums, zsync files, CLI and web bundles, setup programs, or anything else.
 pub fn parse_asset_name(name: &str, stems: &[&str]) -> Option<AssetName> {
+    if let Some(parsed) = parse_versionless(name, stems) {
+        return Some(parsed);
+    }
     const KINDS: [PackageKind; 9] = [
         PackageKind::PortableZip,
         PackageKind::TarGz,
@@ -260,6 +276,33 @@ pub fn parse_asset_name(name: &str, stems: &[&str]) -> Option<AssetName> {
     None
 }
 
+/// `<stem>-<os>-<arch>.<ext>`, as DraftCraft names its files: no version (the release tag has it).
+fn parse_versionless(name: &str, stems: &[&str]) -> Option<AssetName> {
+    const KINDS: [PackageKind; 8] = [
+        PackageKind::PortableZip,
+        PackageKind::TarGz,
+        PackageKind::Msi,
+        PackageKind::Dmg,
+        PackageKind::AppImage,
+        PackageKind::Deb,
+        PackageKind::Rpm,
+        PackageKind::Flatpak,
+    ];
+    // A plain `.zip` names the portable build only on Windows (`draftcraft-windows-x64.zip`).
+    let (kind, base) = KINDS
+        .iter()
+        .find_map(|k| name.strip_suffix(k.suffix()).map(|b| (*k, b)))
+        .or_else(|| name.strip_suffix(".zip").filter(|b| b.contains("-windows-")).map(|b| (PackageKind::PortableZip, b)))?;
+    stems.iter().find_map(|stem| {
+        let token = os_arch_token(strip_stem_prefix(base, stem, '-')?)?;
+        let windows_only = matches!(kind, PackageKind::Msi | PackageKind::PortableZip);
+        if windows_only != token.starts_with("windows-") {
+            return None;
+        }
+        Some(AssetName { stem: (*stem).to_string(), version: String::new(), token, kind })
+    })
+}
+
 /// The best asset of `release` for `platform`, trying `kinds` in order and, within a kind, the
 /// platform's tokens in order (native before emulated).
 pub fn pick_asset<'a>(release: &'a Release, stems: &[&str], platform: Platform, kinds: &[PackageKind]) -> Option<(&'a Asset, PackageKind)> {
@@ -285,244 +328,118 @@ mod tests {
         }
     }
 
-    const PHOTO: &[&str] = &[
-        "photocraft-0.5.0-freebsd-x86_64.tar.gz",
-        "photocraft-0.5.0-linux-aarch64.AppImage",
-        "photocraft-0.5.0-linux-aarch64.AppImage.zsync",
-        "photocraft-0.5.0-linux-aarch64.deb",
-        "photocraft-0.5.0-linux-riscv64.tar.gz",
-        "photocraft-0.5.0-linux-x86_64.AppImage",
-        "photocraft-0.5.0-linux-x86_64.tar.gz",
-        "photocraft-0.5.0-macos-universal.dmg",
-        "photocraft-0.5.0-windows-x64-portable.zip",
-        "photocraft-0.5.0-windows-x64.msi",
-        "photocraft-0.5.0-windows-x86.msi",
-        "photocraft-cli-0.5.0-macos-universal.zip",
-        "photocraft-web-0.5.0.zip",
-        "SHA256SUMS.txt",
+    fn pick<'a>(r: &'a Release, stem: &str, os: Os, arch: Arch, kinds: &[PackageKind]) -> Option<&'a str> {
+        pick_asset(r, &[stem], Platform { os, arch }, kinds).map(|(a, _)| a.name.as_str())
+    }
+
+    fn draftcraft() -> Release {
+        crate::release::parse_github_release(include_str!("../tests/fixtures/draftcraft-release.json"), "DraftCraft-DEV/DraftCraft").unwrap()
+    }
+
+    /// TraceDraw's file names, as its release workflow writes them (`.github/workflows/build.yml`
+    /// and `packaging/` in tracedraw/tracedraw).
+    const TRACEDRAW: &[&str] = &[
+        "tracedraw-0.48.0-windows-x64-setup.exe",
+        "tracedraw-0.48.0-windows-x64-portable.zip",
+        "tracedraw-0.48.0-windows-arm64-setup.exe",
+        "tracedraw-0.48.0-windows-arm64-portable.zip",
+        "tracedraw-0.48.0-macos-arm64.dmg",
+        "tracedraw-0.48.0-macos-x86_64.dmg",
+        "tracedraw-0.48.0-linux-x86_64.AppImage",
+        "tracedraw-0.48.0-linux-x86_64.AppImage.zsync",
+        "tracedraw-0.48.0-linux-x86_64.tar.gz",
+        "tracedraw-0.48.0-linux-arm64.AppImage",
+        "tracedraw-0.48.0-linux-arm64.tar.gz",
+        "tracedraw_0.48.0-1_amd64.deb",
+        "tracedraw-0.48.0-web.zip",
     ];
 
     #[test]
-    fn macos_prefers_the_published_universal_build() {
-        // PhotoCraft v0.9.0's GitHub metadata, trimmed to its desktop DMG.
-        let mut r = crate::release::parse_github_release(include_str!("../tests/fixtures/photocraft-release.json"), "storytold/photocraft").unwrap();
-        // Split builds must not outrank the published universal DMG, even when listed first.
-        r.assets.splice(0..0, release(&["photocraft-0.9.0-macos-arm64.dmg", "photocraft-0.9.0-macos-x86_64.dmg"]).assets);
-        for arch in [Arch::X64, Arch::Arm64] {
-            let (asset, kind) = pick_asset(&r, &["photocraft"], Platform { os: Os::MacOs, arch }, &[PackageKind::Dmg]).unwrap();
-            assert_eq!(asset.name, "photocraft-0.9.0-macos-universal.dmg");
-            assert_eq!(kind, PackageKind::Dmg);
-        }
+    fn draftcraft_picks_its_published_files() {
+        let r = draftcraft();
+        assert_eq!(r.version.as_ref().map(ToString::to_string).as_deref(), Some("2.2.0"));
+        let zip = [PackageKind::PortableZip];
+        assert_eq!(pick(&r, "draftcraft", Os::Windows, Arch::X64, &zip), Some("draftcraft-windows-x64.zip"));
+        assert_eq!(pick(&r, "draftcraft", Os::Windows, Arch::Arm64, &zip), Some("draftcraft-windows-arm64.zip"));
+        let linux = [PackageKind::AppImage, PackageKind::TarGz];
+        assert_eq!(pick(&r, "draftcraft", Os::Linux, Arch::X64, &linux), Some("draftcraft-linux-x86_64.AppImage"));
+        assert_eq!(pick(&r, "draftcraft", Os::Linux, Arch::Arm64, &linux), Some("draftcraft-linux-aarch64.AppImage"));
+        assert_eq!(pick(&r, "draftcraft", Os::Linux, Arch::X64, &[PackageKind::Deb]), Some("draftcraft-linux-x86_64.deb"));
+        let dmg = [PackageKind::Dmg];
+        assert_eq!(pick(&r, "draftcraft", Os::MacOs, Arch::Arm64, &dmg), Some("draftcraft-macos-arm64.dmg"));
+        assert_eq!(pick(&r, "draftcraft", Os::MacOs, Arch::X64, &dmg), Some("draftcraft-macos-x86_64.dmg"));
     }
 
+    /// DraftCraft's names carry no version: the release's tag does, and every file has a checksum.
     #[test]
-    fn texturecraft_selects_published_desktop_assets() {
-        let release =
-            crate::release::parse_github_release(include_str!("../tests/fixtures/texturecraft-release.json"), "storytold/texturecraft").unwrap();
-        for (os, kind, expected) in [
-            (Os::Windows, PackageKind::Msi, "texturecraft-0.1.0-windows-x64.msi"),
-            (Os::MacOs, PackageKind::Dmg, "texturecraft-0.1.0-macos-universal.dmg"),
-            (Os::Linux, PackageKind::Flatpak, "texturecraft-0.1.0-linux-x86_64.flatpak"),
+    fn draftcraft_names_carry_no_version_and_every_file_a_checksum() {
+        let r = draftcraft();
+        let n = parse_asset_name("draftcraft-windows-x64.zip", &["draftcraft"]).unwrap();
+        assert_eq!((n.version.as_str(), n.token.as_str(), n.kind), ("", "windows-x64", PackageKind::PortableZip));
+        assert!(r.assets.iter().all(|a| a.sha256.is_some()), "a DraftCraft file has no checksum");
+        for other in [
+            "draftcraft-windows-x64-setup.exe",
+            "draftcraft-cli-macos-arm64.zip",
+            "draftcraft-cli-macos-x86_64.zip",
+            "draftcraft-macos-arm64.zip",
+            "draftcraft-linux-x86_64.zip",
+            "SHA256SUMS.txt",
         ] {
-            let platform = Platform { os, arch: Arch::X64 };
-            let (asset, selected) = pick_asset(&release, &["texturecraft"], platform, &[kind]).unwrap();
-            assert_eq!(asset.name, expected);
-            assert_eq!(selected, kind);
-        }
-    }
-
-    /// ArtCraft Studio's release fixture resolves the right asset across macOS, Windows, and Linux.
-    #[test]
-    fn artcraft_studio_selects_published_desktop_assets() {
-        let release = crate::release::parse_github_release(include_str!("../tests/fixtures/artcraft-release.json"), "storytold/artcraft").unwrap();
-        assert_eq!(release.version, Some(crate::version::Version::new(0, 41, 1)));
-        for (os, arch, kind, expected) in [
-            (Os::Windows, Arch::X64, PackageKind::Msi, "ArtCraft_0.41.1_x64_en-US.msi"),
-            (Os::MacOs, Arch::Arm64, PackageKind::Dmg, "ArtCraft_0.41.1_universal.dmg"),
-            (Os::MacOs, Arch::X64, PackageKind::Dmg, "ArtCraft_0.41.1_universal.dmg"),
-            (Os::Linux, Arch::X64, PackageKind::AppImage, "artcraft-0.41.1-linux-x86_64.AppImage"),
-            (Os::Linux, Arch::X64, PackageKind::Flatpak, "artcraft-0.41.1-linux-x86_64.flatpak"),
-            (Os::Linux, Arch::X64, PackageKind::TarGz, "artcraft-0.41.1-linux-x86_64.tar.gz"),
-            (Os::Linux, Arch::Arm64, PackageKind::TarGz, "artcraft-0.41.1-linux-aarch64.tar.gz"),
-        ] {
-            let platform = Platform { os, arch };
-            let (asset, selected) = pick_asset(&release, &["artcraft"], platform, &[kind]).unwrap();
-            assert_eq!(asset.name, expected);
-            assert_eq!(selected, kind);
+            assert_eq!(parse_asset_name(other, &["draftcraft"]), None, "{other}");
         }
     }
 
     #[test]
-    fn freebsd_picks_the_tarball_for_the_processor() {
-        // SoundCraft v0.10.0's GitHub metadata, trimmed to its FreeBSD tarballs.
-        let r = crate::release::parse_github_release(include_str!("../tests/fixtures/soundcraft-release.json"), "storytold/soundcraft").unwrap();
-        let pick = |arch| {
-            let platform = Platform { os: Os::FreeBsd, arch };
-            pick_asset(&r, &["soundcraft"], platform, platform.default_kinds()).map(|(a, k)| (a.name.as_str(), k))
-        };
-        assert_eq!(pick(Arch::X64), Some(("soundcraft-0.10.0-freebsd-x86_64.tar.gz", PackageKind::TarGz)));
-        assert_eq!(pick(Arch::Arm64), Some(("soundcraft-0.10.0-freebsd-aarch64.tar.gz", PackageKind::TarGz)));
-        for arch in [Arch::X86, Arch::Riscv64] {
-            assert_eq!(pick(arch), None);
-        }
-        // An x86_64 machine never takes the ARM tarball, nor an ARM machine the x86_64 one.
-        let only_arm = release(&["soundcraft-0.10.0-freebsd-aarch64.tar.gz"]);
-        assert_eq!(pick_asset(&only_arm, &["soundcraft"], Platform { os: Os::FreeBsd, arch: Arch::X64 }, &[PackageKind::TarGz]), None);
-        let only_x64 = release(&["soundcraft-0.10.0-freebsd-x86_64.tar.gz"]);
-        assert_eq!(pick_asset(&only_x64, &["soundcraft"], Platform { os: Os::FreeBsd, arch: Arch::Arm64 }, &[PackageKind::TarGz]), None);
-    }
-
-    #[test]
-    fn macos_split_builds_match_the_processor() {
-        let r = release(&["photocraft-0.5.0-macos-arm64.dmg", "photocraft-0.5.0-macos-x86_64.dmg"]);
-        let pick = |arch| pick_asset(&r, &["photocraft"], Platform { os: Os::MacOs, arch }, &[PackageKind::Dmg]).map(|(a, _)| a.name.as_str());
-        assert_eq!(pick(Arch::X64), Some("photocraft-0.5.0-macos-x86_64.dmg"));
-        assert_eq!(pick(Arch::Arm64), Some("photocraft-0.5.0-macos-arm64.dmg"));
-    }
-
-    #[test]
-    fn intel_macos_never_selects_an_arm_only_build() {
-        for token in ["macos-aarch64", "macos-arm64"] {
-            let name = format!("photocraft-0.5.0-{token}.dmg");
-            let r = release(&[&name]);
-            assert_eq!(pick_asset(&r, &["photocraft"], Platform { os: Os::MacOs, arch: Arch::X64 }, &[PackageKind::Dmg]), None);
-            assert_eq!(
-                pick_asset(&r, &["photocraft"], Platform { os: Os::MacOs, arch: Arch::Arm64 }, &[PackageKind::Dmg]).map(|(a, _)| a.name.as_str()),
-                Some(name.as_str())
-            );
+    fn tracedraw_picks_its_published_files() {
+        let r = release(TRACEDRAW);
+        let zip = [PackageKind::PortableZip];
+        assert_eq!(pick(&r, "tracedraw", Os::Windows, Arch::X64, &zip), Some("tracedraw-0.48.0-windows-x64-portable.zip"));
+        assert_eq!(pick(&r, "tracedraw", Os::Windows, Arch::Arm64, &zip), Some("tracedraw-0.48.0-windows-arm64-portable.zip"));
+        let linux = [PackageKind::AppImage, PackageKind::TarGz];
+        assert_eq!(pick(&r, "tracedraw", Os::Linux, Arch::X64, &linux), Some("tracedraw-0.48.0-linux-x86_64.AppImage"));
+        assert_eq!(pick(&r, "tracedraw", Os::Linux, Arch::Arm64, &linux), Some("tracedraw-0.48.0-linux-arm64.AppImage"));
+        assert_eq!(pick(&r, "tracedraw", Os::Linux, Arch::Arm64, &[PackageKind::TarGz]), Some("tracedraw-0.48.0-linux-arm64.tar.gz"));
+        assert_eq!(pick(&r, "tracedraw", Os::MacOs, Arch::Arm64, &[PackageKind::Dmg]), Some("tracedraw-0.48.0-macos-arm64.dmg"));
+        let n = parse_asset_name("tracedraw-0.48.0-linux-arm64.AppImage", &["tracedraw"]).unwrap();
+        assert_eq!((n.version.as_str(), n.arch()), ("0.48.0", Some(Arch::Arm64)));
+        for other in ["tracedraw-0.48.0-windows-x64-setup.exe", "tracedraw-0.48.0-web.zip", "tracedraw_0.48.0-1_amd64.deb"] {
+            assert_eq!(parse_asset_name(other, &["tracedraw"]), None, "{other}");
         }
     }
 
     #[test]
-    fn apple_silicon_keeps_the_intel_fallback() {
-        let r = release(&["photocraft-0.5.0-macos-x86_64.dmg"]);
-        assert_eq!(
-            pick_asset(&r, &["photocraft"], Platform { os: Os::MacOs, arch: Arch::Arm64 }, &[PackageKind::Dmg]).map(|(a, _)| a.name.as_str()),
-            Some("photocraft-0.5.0-macos-x86_64.dmg")
-        );
-        for arch in [Arch::X86, Arch::Riscv64] {
-            assert_eq!(pick_asset(&r, &["photocraft"], Platform { os: Os::MacOs, arch }, &[PackageKind::Dmg]), None);
+    fn windows_on_arm_falls_back_to_the_x64_build() {
+        let r = release(&["app-1.0.0-windows-x64-portable.zip", "app-1.0.0-windows-x86-portable.zip"]);
+        assert_eq!(pick(&r, "app", Os::Windows, Arch::Arm64, &[PackageKind::PortableZip]), Some("app-1.0.0-windows-x64-portable.zip"));
+        assert_eq!(pick(&r, "app", Os::Windows, Arch::X86, &[PackageKind::PortableZip]), Some("app-1.0.0-windows-x86-portable.zip"));
+    }
+
+    #[test]
+    fn intel_macs_never_pick_an_arm_build_and_apple_silicon_keeps_the_intel_fallback() {
+        let arm_only = release(&["app-1.0.0-macos-arm64.dmg"]);
+        assert_eq!(pick(&arm_only, "app", Os::MacOs, Arch::X64, &[PackageKind::Dmg]), None);
+        let intel_only = release(&["app-1.0.0-macos-x86_64.dmg"]);
+        assert_eq!(pick(&intel_only, "app", Os::MacOs, Arch::Arm64, &[PackageKind::Dmg]), Some("app-1.0.0-macos-x86_64.dmg"));
+        let both = release(&["app-1.0.0-macos-x86_64.dmg", "app-1.0.0-macos-universal.dmg", "app-1.0.0-macos-arm64.dmg"]);
+        assert_eq!(pick(&both, "app", Os::MacOs, Arch::Arm64, &[PackageKind::Dmg]), Some("app-1.0.0-macos-universal.dmg"));
+    }
+
+    #[test]
+    fn linux_never_picks_another_processor() {
+        let r = release(&["app-linux-x86_64.AppImage", "app-linux-x86_64.deb"]);
+        for kind in [PackageKind::AppImage, PackageKind::Deb] {
+            assert_eq!(pick(&r, "app", Os::Linux, Arch::Arm64, &[kind]), None);
+            assert!(pick(&r, "app", Os::Linux, Arch::X64, &[kind]).is_some());
         }
     }
 
     #[test]
-    fn asset_names_carry_their_architecture() {
-        let arch = |name: &str| parse_asset_name(name, &["photocraft"]).unwrap().arch();
-        assert_eq!(arch("photocraft-0.5.0-windows-x64.msi"), Some(Arch::X64));
-        assert_eq!(arch("photocraft-0.5.0-windows-x86.msi"), Some(Arch::X86));
-        assert_eq!(arch("photocraft-0.5.0-linux-aarch64.tar.gz"), Some(Arch::Arm64));
-        assert_eq!(arch("photocraft-0.5.0-macos-universal.dmg"), None);
-    }
-
-    #[test]
-    fn reads_asset_names() {
-        let n = parse_asset_name("photocraft-0.2.0-rc.1-windows-arm64-portable.zip", &["photocraft"]).unwrap();
+    fn versioned_names_keep_their_version_and_architecture() {
+        let n = parse_asset_name("app-0.2.0-rc.1-windows-arm64-portable.zip", &["app"]).unwrap();
         assert_eq!((n.version.as_str(), n.token.as_str(), n.kind), ("0.2.0-rc.1", "windows-arm64", PackageKind::PortableZip));
-        let n = parse_asset_name("printcraft-0.2.1-linux-x86_64.tar.gz", &["pdfcraft", "printcraft"]).unwrap();
-        assert_eq!((n.stem.as_str(), n.kind), ("printcraft", PackageKind::TarGz));
-        for other in
-            ["photocraft-cli-0.5.0-macos-universal.zip", "photocraft-web-0.5.0.zip", "SHA256SUMS.txt", "photocraft-0.5.0-linux-x86_64.AppImage.zsync"]
-        {
-            assert_eq!(parse_asset_name(other, &["photocraft"]), None, "{other}");
-        }
-        // FigCraft also ships its collaboration server; that tarball is not the app.
-        assert_eq!(parse_asset_name("figcraft-server-0.5.1-linux-x86_64.tar.gz", &["figcraft"]), None);
-        assert!(parse_asset_name("figcraft-0.5.1-linux-x86_64.tar.gz", &["figcraft"]).is_some());
-    }
-
-    /// Studio's underscore-form MSI and DMG names parse cleanly, including `x86_64` and non-ASCII prefixes.
-    #[test]
-    fn reads_artcraft_studio_asset_names() {
-        let dmg = parse_asset_name("ArtCraft_0.41.1_universal.dmg", &["artcraft"]).unwrap();
-        assert_eq!((dmg.version.as_str(), dmg.token.as_str(), dmg.kind), ("0.41.1", "macos-universal", PackageKind::Dmg));
-
-        let x86_64_dmg = parse_asset_name("ArtCraft_0.41.1_x86_64.dmg", &["artcraft"]).unwrap();
-        assert_eq!((x86_64_dmg.version.as_str(), x86_64_dmg.token.as_str(), x86_64_dmg.kind), ("0.41.1", "macos-x86_64", PackageKind::Dmg));
-
-        let msi = parse_asset_name("ArtCraft_0.41.1_x64_en-US.msi", &["artcraft"]).unwrap();
-        assert_eq!((msi.version.as_str(), msi.token.as_str(), msi.kind), ("0.41.1", "windows-x64", PackageKind::Msi));
-
-        let x86_64_msi = parse_asset_name("ArtCraft_0.41.1_x86_64.msi", &["artcraft"]).unwrap();
-        assert_eq!((x86_64_msi.version.as_str(), x86_64_msi.token.as_str(), x86_64_msi.kind), ("0.41.1", "windows-x64", PackageKind::Msi));
-
-        assert_eq!(parse_asset_name("artcrafé_0.41.1_x64.msi", &["artcraft"]), None);
-    }
-
-    #[test]
-    fn picks_the_native_build_first_and_falls_back_to_emulation() {
-        let r = release(PHOTO);
-        let pick = |os, arch, kinds: &[PackageKind]| pick_asset(&r, &["photocraft"], Platform { os, arch }, kinds).map(|(a, _)| a.name.clone());
-        assert_eq!(pick(Os::MacOs, Arch::Arm64, &[PackageKind::Dmg]).as_deref(), Some("photocraft-0.5.0-macos-universal.dmg"));
-        assert_eq!(pick(Os::Windows, Arch::X64, &[PackageKind::Msi]).as_deref(), Some("photocraft-0.5.0-windows-x64.msi"));
-        // No arm64 MSI in this release: Windows on ARM runs the x64 build.
-        assert_eq!(pick(Os::Windows, Arch::Arm64, &[PackageKind::Msi]).as_deref(), Some("photocraft-0.5.0-windows-x64.msi"));
-        assert_eq!(pick(Os::Linux, Arch::Arm64, &[PackageKind::AppImage]).as_deref(), Some("photocraft-0.5.0-linux-aarch64.AppImage"));
-        assert_eq!(pick(Os::Linux, Arch::Arm64, &[PackageKind::TarGz]), None);
-        assert_eq!(pick(Os::Linux, Arch::Riscv64, &[PackageKind::TarGz]).as_deref(), Some("photocraft-0.5.0-linux-riscv64.tar.gz"));
-        assert_eq!(pick(Os::FreeBsd, Arch::X64, &[PackageKind::TarGz]).as_deref(), Some("photocraft-0.5.0-freebsd-x86_64.tar.gz"));
-        // Preference order across kinds.
-        assert_eq!(
-            pick(Os::Windows, Arch::X64, &[PackageKind::PortableZip, PackageKind::Msi]).as_deref(),
-            Some("photocraft-0.5.0-windows-x64-portable.zip")
-        );
-        assert_eq!(pick(Os::Windows, Arch::X86, &[PackageKind::PortableZip, PackageKind::Msi]).as_deref(), Some("photocraft-0.5.0-windows-x86.msi"));
-
-        let p_riscv = Platform { os: Os::Linux, arch: Arch::Riscv64 };
-        assert_eq!(
-            pick_asset(&r, &["photocraft"], p_riscv, p_riscv.default_kinds()).map(|(a, _)| a.name.clone()).as_deref(),
-            Some("photocraft-0.5.0-linux-riscv64.tar.gz")
-        );
-        assert_eq!(
-            pick_asset(&r, &["photocraft"], p_riscv, p_riscv.download_kinds()).map(|(a, _)| a.name.clone()).as_deref(),
-            Some("photocraft-0.5.0-linux-riscv64.tar.gz")
-        );
-        let r_riscv_deb =
-            release(&["photocraft-0.5.0-linux-riscv64.tar.gz", "photocraft-0.5.0-linux-riscv64.deb", "photocraft-0.5.0-linux-riscv64.rpm"]);
-        assert_eq!(
-            pick_asset(&r_riscv_deb, &["photocraft"], p_riscv, p_riscv.download_kinds()).map(|(a, _)| a.name.clone()).as_deref(),
-            Some("photocraft-0.5.0-linux-riscv64.deb")
-        );
-    }
-
-    #[test]
-    fn strictly_matches_architecture_for_all_linux_package_formats() {
-        let multi_arch_release = release(&[
-            "photocraft-0.5.0-linux-aarch64.AppImage",
-            "photocraft-0.5.0-linux-x86_64.AppImage",
-            "photocraft-0.5.0-linux-aarch64.deb",
-            "photocraft-0.5.0-linux-x86_64.deb",
-            "photocraft-0.5.0-linux-aarch64.rpm",
-            "photocraft-0.5.0-linux-x86_64.rpm",
-            "photocraft-0.5.0-linux-aarch64.pkg.tar.zst",
-            "photocraft-0.5.0-linux-x86_64.pkg.tar.zst",
-            "photocraft-0.5.0-linux-aarch64.flatpak",
-            "photocraft-0.5.0-linux-x86_64.flatpak",
-            "photocraft-0.5.0-linux-aarch64.tar.gz",
-            "photocraft-0.5.0-linux-x86_64.tar.gz",
-        ]);
-
-        let p_x64 = Platform { os: Os::Linux, arch: Arch::X64 };
-        let p_arm64 = Platform { os: Os::Linux, arch: Arch::Arm64 };
-
-        for kind in [PackageKind::AppImage, PackageKind::Deb, PackageKind::Rpm, PackageKind::ArchPkg, PackageKind::Flatpak, PackageKind::TarGz] {
-            let pick_x64 = pick_asset(&multi_arch_release, &["photocraft"], p_x64, &[kind]).map(|(a, _)| a.name.clone());
-            assert!(pick_x64.as_deref().unwrap().contains("linux-x86_64"), "Expected x86_64 asset for {kind:?}, got {pick_x64:?}");
-
-            let pick_arm64 = pick_asset(&multi_arch_release, &["photocraft"], p_arm64, &[kind]).map(|(a, _)| a.name.clone());
-            assert!(pick_arm64.as_deref().unwrap().contains("linux-aarch64"), "Expected aarch64 asset for {kind:?}, got {pick_arm64:?}");
-        }
-
-        // On x86_64 Linux, an aarch64-only asset must NEVER match or fall back
-        let arm_only_release = release(&[
-            "photocraft-0.5.0-linux-aarch64.AppImage",
-            "photocraft-0.5.0-linux-aarch64.deb",
-            "photocraft-0.5.0-linux-aarch64.rpm",
-            "photocraft-0.5.0-linux-aarch64.pkg.tar.zst",
-            "photocraft-0.5.0-linux-aarch64.flatpak",
-            "photocraft-0.5.0-linux-aarch64.tar.gz",
-        ]);
-        for kind in [PackageKind::AppImage, PackageKind::Deb, PackageKind::Rpm, PackageKind::ArchPkg, PackageKind::Flatpak, PackageKind::TarGz] {
-            assert_eq!(pick_asset(&arm_only_release, &["photocraft"], p_x64, &[kind]), None, "x86_64 must never match an aarch64 asset for {kind:?}");
+        assert_eq!(parse_asset_name("app-1.0.0-macos-universal.dmg", &["app"]).unwrap().arch(), None);
+        for other in ["app-cli-1.0.0-macos-universal.zip", "app-web-1.0.0.zip", "app-1.0.0-linux-x86_64.AppImage.zsync", "other-1.0.0-linux-x86_64.AppImage"] {
+            assert_eq!(parse_asset_name(other, &["app"]), None, "{other}");
         }
     }
 }
