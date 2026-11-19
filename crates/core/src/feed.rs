@@ -1,16 +1,13 @@
-//! The release feed from storyteller-web: `GET https://api.storyteller.ai/v1/craft_apps/release_info`.
+//! The release feed format: one JSON document listing every app's latest release.
 //!
-//! storyteller-web polls GitHub for every Craft App on a schedule and serves the result, so the
-//! launcher doesn't have to (GitHub allows 60 unauthenticated requests an hour). GitHub stays the
-//! fallback: for apps the feed doesn't list, apps it hasn't fetched within [`MAX_AGE`], or when
-//! the feed doesn't answer.
+//! D.E.V. Launcher asks GitHub directly, so no hosted feed is used. The format is kept for a
+//! developer's own loopback mirror (see [`Feed::with_mirror`], `cargo xtask local`): the mirror
+//! serves the feed and the builds from their own machine, links under the mirror are accepted, and
+//! entries never go stale.
 //!
 //! The feed is input like any other: every field is optional, unknown fields are ignored, a field
 //! of the wrong type reads as missing, one bad entry never spoils the others, and download links
 //! must still point at the app's own GitHub releases.
-//!
-//! A developer can serve the feed and the builds from their own machine instead (see
-//! [`Feed::with_mirror`]): then links under the mirror are accepted too, and entries never go stale.
 
 use std::collections::BTreeMap;
 
@@ -22,10 +19,7 @@ use crate::release::{self, Asset, Release, truncate};
 use crate::time::parse_rfc3339;
 use crate::version;
 
-/// Where the feed lives.
-pub const FEED_URL: &str = "https://api.storyteller.ai/v1/craft_apps/release_info";
-
-/// An app's entry is trusted for this long after storyteller-web fetched it.
+/// An app's entry is trusted for this long after the feed fetched it.
 pub const MAX_AGE: i64 = 24 * 3600;
 
 /// The feed, read leniently.
@@ -50,7 +44,7 @@ pub struct FeedApp {
     pub repo: Option<String>,
     /// Present when the repo has a published release. Meaningless unless `fetched_at` is set.
     pub release: Option<FeedRelease>,
-    /// When storyteller-web last fetched this app (Unix seconds).
+    /// When the feed last fetched this app (Unix seconds).
     pub fetched_at: Option<i64>,
 }
 

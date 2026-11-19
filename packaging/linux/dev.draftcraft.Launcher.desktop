@@ -10,4 +10,4 @@ Terminal=false
 StartupNotify=true
 StartupWMClass=dev.draftcraft.Launcher
 Categories=Utility;PackageManager;
-Keywords=artcraft;craft;launcher;installer;updater;photocraft;filmcraft;apps;
+Keywords=draftcraft;dev;launcher;installer;updater;tracedraw;cad;drafting;apps;

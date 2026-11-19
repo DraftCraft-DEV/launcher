@@ -7,17 +7,15 @@
   <project_license>MIT OR Apache-2.0</project_license>
   <name>D.E.V. Launcher</name>
   <summary>Install, update and launch the D.E.V. App Suite</summary>
-  <developer id="ai.storyteller">
+  <developer id="dev.draftcraft">
     <name>DraftCraft Engineering Ventures</name>
   </developer>
   <description>
     <p>
-      D.E.V. Launcher lists every app in the D.E.V. App Suite (PhotoCraft, LightCraft, FilmCraft,
-      DesignCraft, VectorCraft, PdfCraft, EffectCraft, WordCraft, DeckCraft, GridCraft, CADCraft,
-      SoundCraft and FigCraft), installs the right build for your computer, and keeps them up to date.
+      D.E.V. Launcher lists every app in the D.E.V. App Suite (DraftCraft and TraceDraw), installs the right build for your computer, and keeps them up to date.
     </p>
     <ul>
-      <li>One place to find, install and open every Craft app</li>
+      <li>One place to find, install and open every D.E.V. app</li>
       <li>Checks GitHub releases for updates and installs them for you</li>
       <li>Lives in the system tray and tells you when updates are ready</li>
     </ul>
@@ -25,10 +23,10 @@
   <launchable type="desktop-id">dev.draftcraft.Launcher.desktop</launchable>
   <icon type="stock">dev.draftcraft.Launcher</icon>
   <!-- Only url types known to appstream 0.15 (Ubuntu 22.04, where CI validates): no vcs-browser. -->
-  <url type="homepage">https://getartcraft.com/apps</url>
+  <url type="homepage">https://draftcraft.dev</url>
   <url type="bugtracker">https://github.com/DraftCraft-DEV/launcher/issues</url>
   <url type="help">https://github.com/DraftCraft-DEV/launcher</url>
-  <url type="contact">https://discord.gg/artcraft</url>
+  <url type="contact">https://discord.gg/YgRK8Eww9x</url>
   <categories>
     <category>Utility</category>
     <category>PackageManager</category>
@@ -37,7 +35,7 @@
     <keyword>launcher</keyword>
     <keyword>installer</keyword>
     <keyword>updater</keyword>
-    <keyword>artcraft</keyword>
+    <keyword>draftcraft</keyword>
   </keywords>
   <branding>
     <color type="primary" scheme_preference="light">#d9dce3</color>

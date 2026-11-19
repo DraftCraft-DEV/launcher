@@ -150,13 +150,13 @@ cmp -s "$DESKTOP" "$TMP/custom-wrapper-entry" || fail "quoted absolute wrapper o
 # 12b. Unmarked legacy entries cannot establish ownership, even with a plain Exec.
 legacy="$TMP/legacy.AppImage"
 : >"$legacy"
-sed -e '/^X-ArtCraft-Launcher-Generated-Exec=/d' -e "s|^Exec=.*|Exec=\"$legacy\"|" "$TMP/generated-entry" >"$DESKTOP"
+sed -e '/^X-DEV-Launcher-Generated-Exec=/d' -e "s|^Exec=.*|Exec=\"$legacy\"|" "$TMP/generated-entry" >"$DESKTOP"
 cp "$DESKTOP" "$TMP/legacy-entry"
 "$APPDIR/AppRun" >/dev/null || fail "launch with legacy entry failed"
 cmp -s "$DESKTOP" "$TMP/legacy-entry" || fail "ambiguous legacy entry overwritten"
 
 # 12c. Duplicate executable or ownership keys are ambiguous and stay untouched.
-for key in Exec X-ArtCraft-Launcher-Generated-Exec; do
+for key in Exec X-DEV-Launcher-Generated-Exec; do
   cp "$TMP/generated-entry" "$DESKTOP"
   grep "^$key=" "$TMP/generated-entry" >>"$DESKTOP"
   cp "$DESKTOP" "$TMP/duplicate-entry"
@@ -165,7 +165,7 @@ for key in Exec X-ArtCraft-Launcher-Generated-Exec; do
 done
 
 # The uncustomized entry refreshed after the move keeps a matching ownership marker.
-grep -Fxq "X-ArtCraft-Launcher-Generated-Exec=\"$(readlink -f "$APPIMAGE")\"" "$TMP/generated-entry" || fail "generated executable marker missing or stale"
+grep -Fxq "X-DEV-Launcher-Generated-Exec=\"$(readlink -f "$APPIMAGE")\"" "$TMP/generated-entry" || fail "generated executable marker missing or stale"
 
 # 13. Refresh a changed icon, and tolerate a cache updater that fails.
 printf '#!/bin/sh\nexit 1\n' >"$TMP/tools/gtk-update-icon-cache"

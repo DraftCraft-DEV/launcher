@@ -57,7 +57,7 @@ case "$ARCH" in
   aarch64 | arm64) ARCH=aarch64; DEB_ARCH=arm64 ;;
   *) echo "unsupported architecture $ARCH" >&2; exit 2 ;;
 esac
-export DEV_LAUNCHER_MAINTAINER="${DEV_LAUNCHER_MAINTAINER:-D.E.V. Launcher maintainers <craft-launcher@storyteller.ai>}"
+export DEV_LAUNCHER_MAINTAINER="${DEV_LAUNCHER_MAINTAINER:-D.E.V. Launcher maintainers <https://github.com/DraftCraft-DEV/launcher>}"
 BASENAME="$PKG-$VERSION-linux-$ARCH"
 
 echo "==> D.E.V. Launcher $VERSION for Linux $ARCH ($FORMATS)"

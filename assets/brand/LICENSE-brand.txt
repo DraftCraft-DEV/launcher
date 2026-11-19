@@ -1,0 +1,25 @@
+D.E.V. brand terms
+
+The marks
+  - the names D.E.V., D.E.V. Launcher and DraftCraft™ Engineering Ventures;
+  - the D.E.V. avatar, mark, logo and wordmark in assets/brand/ (dev-avatar, dev-mark,
+    dev-mark-dark, dev-mark-mono, dev-logo, dev-logo-dark, dev-wordmark, dev-wordmark-dark, as SVG
+    and PNG), and every render made from them by packaging/icons.sh (assets/app-icon/).
+
+Owner
+  These marks are trademarks of DraftCraft Engineering Ventures (https://github.com/DraftCraft-DEV).
+  The ™ sign marks a claimed trademark; it is not a registration.
+
+What the code licence covers
+  D.E.V. Launcher's source code is licensed under the MIT License or the Apache License, Version 2.0,
+  at your option (LICENSE-MIT, LICENSE-APACHE). Those licences do not cover these marks and grant no
+  right to use them (the Apache License says so in its section 6).
+
+Use
+  The files are used exactly as supplied: never redrawn, recoloured or cropped. They may be used only
+  as part of this repository and D.E.V. Launcher. Forks and modified versions must remove them and
+  must not suggest that DraftCraft Engineering Ventures made, endorsed or supports them, unless it
+  agrees in writing. You may say truthfully that your work is based on D.E.V. Launcher.
+
+Contact
+  DraftCraft Engineering Ventures, https://github.com/DraftCraft-DEV

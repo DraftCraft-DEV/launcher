@@ -1,8 +1,6 @@
 D.E.V. Launcher app icon (every file in this directory)
 
-These files are the ArtCraft "A" mark (docs/brand/artcraft-mark-black.svg), rendered unmodified by
-packaging/icons.sh. The mark is a trademark of the ArtCraft Team. It is NOT open source and is NOT
-covered by D.E.V. Launcher's MIT or Apache-2.0 license.
-
-Its terms are in docs/brand/LICENSE-brand.txt. In short: it may be used only unmodified, only as
-part of this repository and D.E.V. Launcher, and forks and modified versions must remove it.
+These files are the D.E.V. avatar and mark (assets/brand/), rendered unmodified by
+packaging/icons.sh. They are trademarks of DraftCraft Engineering Ventures, NOT open source and NOT
+covered by D.E.V. Launcher's MIT or Apache-2.0 license. Their terms are in
+assets/brand/LICENSE-brand.txt.

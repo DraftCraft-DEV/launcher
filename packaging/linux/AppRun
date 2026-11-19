@@ -54,7 +54,7 @@ integrate() {
   tmp="$apps/.$DESK_ID.tmp.$$"
   esc="$(printf '%s' "$appimage" | sed 's/[\\&|]/\\&/g')"
   if sed -e "s|^Exec=.*|Exec=\"$esc\"|" -e '/^TryExec=/d' "$src_desktop" 2>/dev/null >"$tmp" &&
-    printf '%s\n' "X-ArtCraft-Launcher-Generated-Exec=\"$appimage\"" >>"$tmp"; then
+    printf '%s\n' "X-DEV-Launcher-Generated-Exec=\"$appimage\"" >>"$tmp"; then
     if cmp -s "$tmp" "$apps/$DESK_ID.desktop"; then
       rm -f "$tmp"
     elif [ ! -e "$apps/$DESK_ID.desktop" ] && [ ! -L "$apps/$DESK_ID.desktop" ] || own_entry "$apps/$DESK_ID.desktop"; then
@@ -98,13 +98,13 @@ integrate() {
 own_entry() {
   [ -f "$1" ] && [ ! -L "$1" ] || return 1
   [ "$(grep -c '^Exec=' "$1")" = 1 ] || return 1
-  [ "$(grep -c '^X-ArtCraft-Launcher-Generated-Exec=' "$1")" = 1 ] || return 1
+  [ "$(grep -c '^X-DEV-Launcher-Generated-Exec=' "$1")" = 1 ] || return 1
   grep -Eq '^Exec="/[^"`$\\%]+"$' "$1" || return 1
   existing_exec="$(sed -n 's/^Exec=//p' "$1")" || return 1
-  generated_exec="$(sed -n 's/^X-ArtCraft-Launcher-Generated-Exec=//p' "$1")" || return 1
+  generated_exec="$(sed -n 's/^X-DEV-Launcher-Generated-Exec=//p' "$1")" || return 1
   [ "$existing_exec" = "$generated_exec" ] || return 1
   expected_body="$(sed -e '/^Exec=/d' -e '/^TryExec=/d' "$src_desktop")" || return 1
-  existing_body="$(sed -e '/^Exec=/d' -e '/^X-ArtCraft-Launcher-Generated-Exec=/d' "$1")" || return 1
+  existing_body="$(sed -e '/^Exec=/d' -e '/^X-DEV-Launcher-Generated-Exec=/d' "$1")" || return 1
   # Entries written before the StartupWMClass fix differ only in that line.
   old_body="$(printf '%s\n' "$expected_body" | sed 's/^StartupWMClass=.*/StartupWMClass=dev-launcher/')"
   [ "$expected_body" = "$existing_body" ] || [ "$old_body" = "$existing_body" ]

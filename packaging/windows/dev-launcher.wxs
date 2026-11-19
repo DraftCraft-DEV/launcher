@@ -8,7 +8,7 @@
       -culture en-US -loc dev-launcher.en-us.wxl -d Version=1.2.3 -d DisplayVersion=1.2.3-rc.1
       -d BinDir=... -d IconPath=... -d BannerBmp=... -d DialogBmp=... -o out.msi
 
-  Per-user install (no UAC prompt), by default into %LOCALAPPDATA%\Programs\ArtCraft\Launcher, so
+  Per-user install (no UAC prompt), by default into %LOCALAPPDATA%\Programs\DraftCraft Engineering Ventures\D.E.V. Launcher, so
   the launcher can update itself without elevation, plus a Start Menu shortcut. The shortcut
   carries the AppUserModelID dev.draftcraft.Launcher, which Windows needs to show toast
   notifications from an unpackaged app and to group the taskbar button. No file associations.
@@ -49,13 +49,13 @@
          (build.rs embeds it), at a path every update keeps. -->
     <Icon Id="DevLauncherIcon.exe" SourceFile="$(var.IconPath)" />
     <Property Id="ARPPRODUCTICON" Value="DevLauncherIcon.exe" />
-    <Property Id="ARPURLINFOABOUT" Value="https://getartcraft.com/apps" />
+    <Property Id="ARPURLINFOABOUT" Value="https://draftcraft.dev" />
     <Property Id="ARPURLUPDATEINFO" Value="https://github.com/DraftCraft-DEV/launcher/releases" />
-    <Property Id="ARPHELPLINK" Value="https://discord.gg/artcraft" />
+    <Property Id="ARPHELPLINK" Value="https://discord.gg/YgRK8Eww9x" />
 
     <StandardDirectory Id="LocalAppDataFolder">
       <Directory Id="LocalProgramsFolder" Name="Programs">
-        <Directory Id="CraftSuiteFolder" Name="ArtCraft">
+        <Directory Id="CraftSuiteFolder" Name="DraftCraft Engineering Ventures">
           <Directory Id="INSTALLFOLDER" Name="Launcher" />
         </Directory>
       </Directory>
@@ -92,16 +92,16 @@
     </Feature>
 
     <!-- The setup wizard: WixUI_InstallDir without its licence page, and with our folder page
-         (ArtCraftInstallDirDlg: the stock one plus the desktop-shortcut box) in place of the stock
+         (DevInstallDirDlg: the stock one plus the desktop-shortcut box) in place of the stock
          one. A later NewDialog on the same button wins. -->
     <ui:WixUI Id="WixUI_InstallDir" InstallDirectory="INSTALLFOLDER" />
     <UI>
-      <Publish Dialog="WelcomeDlg" Control="Next" Event="NewDialog" Value="ArtCraftInstallDirDlg" Order="2" Condition="NOT Installed" />
-      <Publish Dialog="VerifyReadyDlg" Control="Back" Event="NewDialog" Value="ArtCraftInstallDirDlg" Order="2" Condition="NOT Installed" />
+      <Publish Dialog="WelcomeDlg" Control="Next" Event="NewDialog" Value="DevInstallDirDlg" Order="2" Condition="NOT Installed" />
+      <Publish Dialog="VerifyReadyDlg" Control="Back" Event="NewDialog" Value="DevInstallDirDlg" Order="2" Condition="NOT Installed" />
       <Publish Dialog="ExitDialog" Control="Finish" Event="DoAction" Value="LaunchDevLauncher"
           Condition="WIXUI_EXITDIALOGOPTIONALCHECKBOX = 1 AND NOT Installed" />
 
-      <Dialog Id="ArtCraftInstallDirDlg" Width="370" Height="270" Title="!(loc.InstallDirDlg_Title)">
+      <Dialog Id="DevInstallDirDlg" Width="370" Height="270" Title="!(loc.InstallDirDlg_Title)">
         <Control Id="Next" Type="PushButton" X="236" Y="243" Width="56" Height="17" Default="yes" Text="!(loc.WixUINext)">
           <!-- As WixUI_InstallDir does for its own folder page: take the folder, check it, go on. -->
           <Publish Event="SetTargetPath" Value="[WIXUI_INSTALLDIR]" Order="1" />
@@ -128,12 +128,12 @@
           <Publish Property="_BrowseProperty" Value="[WIXUI_INSTALLDIR]" Order="1" />
           <Publish Event="SpawnDialog" Value="BrowseDlg" Order="2" />
         </Control>
-        <Control Id="PerUserNote" Type="Text" X="20" Y="146" Width="330" Height="24" NoPrefix="yes" Text="!(loc.ArtCraftInstallDirNote)" />
+        <Control Id="PerUserNote" Type="Text" X="20" Y="146" Width="330" Height="24" NoPrefix="yes" Text="!(loc.DevInstallDirNote)" />
 
-        <Control Id="DesktopShortcut" Type="CheckBox" X="20" Y="186" Width="330" Height="17" Property="INSTALLDESKTOPSHORTCUT" CheckBoxValue="1" Text="!(loc.ArtCraftDesktopShortcut)" />
+        <Control Id="DesktopShortcut" Type="CheckBox" X="20" Y="186" Width="330" Height="17" Property="INSTALLDESKTOPSHORTCUT" CheckBoxValue="1" Text="!(loc.DevDesktopShortcut)" />
       </Dialog>
     </UI>
-    <!-- Our own art, drawn by package.ps1 from the ArtCraft mark and the Craft apps' icons. -->
+    <!-- Our own art, drawn by package.ps1 from the D.E.V. brand and the apps' icons. -->
     <WixVariable Id="WixUIBannerBmp" Value="$(var.BannerBmp)" />
     <WixVariable Id="WixUIDialogBmp" Value="$(var.DialogBmp)" />
 
