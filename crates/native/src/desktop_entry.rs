@@ -14,7 +14,7 @@ use std::path::Path;
 use dev_launcher_core::CraftApp;
 
 /// The key that marks an entry as written by the launcher.
-pub const MARKER: &str = "X-ArtCraft-Launcher=true";
+pub const MARKER: &str = "X-DEV-Launcher=true";
 
 /// The menu categories and the window class each app's own `.desktop` file declares.
 pub fn meta(app: &CraftApp) -> (&'static str, Option<&'static str>) {
@@ -22,7 +22,9 @@ pub fn meta(app: &CraftApp) -> (&'static str, Option<&'static str>) {
         return (meta.desktop_categories.as_str(), Some(meta.startup_wm_class.as_str()));
     }
     match app.id {
-        "artcraft" => ("Graphics;AudioVideo;2DGraphics;", Some("artcraft")),
+        "draftcraft" => ("Graphics;Engineering;VectorGraphics;", None),
+        "tracedraw" => ("Graphics;2DGraphics;VectorGraphics;Publishing;", None),
+        // The upstream apps, for the tests' fixture catalog (never matched by a real install).
         "photocraft" => ("Graphics;2DGraphics;RasterGraphics;Photography;", Some("photocraft")),
         "pdfcraft" => ("Office;Viewer;", Some("pdfcraft")),
         "lightcraft" => ("Graphics;2DGraphics;RasterGraphics;Photography;", None),
@@ -156,7 +158,7 @@ mod tests {
             "[Desktop Entry]\nType=Application\nName=PhotoCraft\nComment={}\n\
              Exec=\"/home/ana/Applications/photocraft-0.6.0-linux-x86_64.AppImage\" %F\n\
              Icon=ai.storyteller.photocraft\nTerminal=false\nCategories=Graphics;2DGraphics;RasterGraphics;Photography;\n\
-             StartupWMClass=photocraft\nX-ArtCraft-Launcher=true\n",
+             StartupWMClass=photocraft\nX-DEV-Launcher=true\n",
             app("photocraft").tagline
         );
         assert_eq!(text, expected);

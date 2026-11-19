@@ -116,14 +116,14 @@ fn exe_candidates(app: &CraftApp, location: Option<&Path>, program_files: &[Path
     dirs.flat_map(|d| app.stems().map(move |s| d.join(format!("{s}.exe")))).collect()
 }
 
-/// The folder under `ArtCraft` that the MSI installs to when it is not the display name: the launcher
-/// installs to `ArtCraft\Launcher`, the apps to `ArtCraft\<App>`.
+/// The folder under `DraftCraft Engineering Ventures` that the MSI installs to when it is not the
+/// display name: the launcher installs to `…\Launcher`, the apps to `…\<App>`.
 #[cfg_attr(not(windows), allow(dead_code))]
 fn suite_folders(app: &CraftApp, roots: &[PathBuf]) -> Vec<PathBuf> {
     if app.id != dev_launcher_core::catalog::LAUNCHER_ID {
         return Vec::new();
     }
-    roots.iter().map(|root| root.join("ArtCraft").join("Launcher")).collect()
+    roots.iter().map(|root| root.join("DraftCraft Engineering Ventures").join("Launcher")).collect()
 }
 
 /// The registry keys an MSI records its install folder in (value `InstallDir`). The launcher's package
@@ -379,11 +379,11 @@ pub mod windows {
     }
 
     /// Where the exe may be under the given install roots, best first: the launcher's own folder, then
-    /// the `ArtCraft` suite folder of each root, then the bare roots (older installs). Not checked on
+    /// the `DraftCraft Engineering Ventures` folder of each root, then the bare roots (older installs). Not checked on
     /// disk.
     fn candidates_in_roots(app: &CraftApp, roots: &[PathBuf]) -> Vec<PathBuf> {
         let mut out: Vec<PathBuf> = suite_folders(app, roots).iter().flat_map(|dir| exe_candidates(app, Some(dir), &[])).collect();
-        let mut dirs: Vec<PathBuf> = roots.iter().map(|root| root.join("ArtCraft")).collect();
+        let mut dirs: Vec<PathBuf> = roots.iter().map(|root| root.join("DraftCraft Engineering Ventures")).collect();
         dirs.extend(roots.iter().cloned());
         out.extend(exe_candidates(app, None, &dirs));
         out
@@ -1162,7 +1162,7 @@ mod tests {
     fn an_exe_in_the_suite_folder_of_any_root_is_found() {
         let dir = tempfile::tempdir().unwrap();
         let deck = CraftApp::by_id("deckcraft").unwrap();
-        let folder = dir.path().join("ArtCraft").join("DeckCraft");
+        let folder = dir.path().join("DraftCraft Engineering Ventures").join("DeckCraft");
         std::fs::create_dir_all(&folder).unwrap();
         std::fs::write(folder.join("deckcraft.exe"), "x").unwrap();
         assert_eq!(windows::exe_in_roots(deck, vec![dir.path().to_path_buf()]), Some(folder.join("deckcraft.exe")));
@@ -1190,7 +1190,7 @@ mod tests {
     fn the_copy_with_the_records_version_is_the_one_opened() {
         let v = |s: &str| version::parse(s);
         let old = PathBuf::from(r"D:\Old\deckcraft.exe");
-        let new = PathBuf::from(r"C:\Users\a\AppData\Local\Programs\ArtCraft\DeckCraft\deckcraft.exe");
+        let new = PathBuf::from(r"C:\Users\a\AppData\Local\Programs\DraftCraft Engineering Ventures\DeckCraft\deckcraft.exe");
         let version_of = |p: &std::path::Path| if p == old { v("0.11.1") } else { v("0.12.0") };
         let both = vec![old.clone(), new.clone()];
         assert_eq!(windows::pick_candidate(both.clone(), v("0.12.0").as_ref(), version_of), Some(new.clone()));
@@ -1208,7 +1208,7 @@ mod tests {
         let dir = tempfile::tempdir().unwrap();
         let deck = CraftApp::by_id("deckcraft").unwrap();
         let (a, b) = (dir.path().join("a"), dir.path().join("b"));
-        let exes: Vec<PathBuf> = [&a, &b].iter().map(|r| r.join("ArtCraft").join("DeckCraft").join("deckcraft.exe")).collect();
+        let exes: Vec<PathBuf> = [&a, &b].iter().map(|r| r.join("DraftCraft Engineering Ventures").join("DeckCraft").join("deckcraft.exe")).collect();
         for exe in &exes {
             std::fs::create_dir_all(exe.parent().unwrap()).unwrap();
             std::fs::write(exe, "x").unwrap();
@@ -1221,7 +1221,7 @@ mod tests {
     #[test]
     fn the_launcher_msi_installs_to_dev_launcher_and_the_apps_do_not() {
         let roots = roots();
-        let want: Vec<PathBuf> = roots.iter().map(|root| root.join("ArtCraft").join("Launcher")).collect();
+        let want: Vec<PathBuf> = roots.iter().map(|root| root.join("DraftCraft Engineering Ventures").join("Launcher")).collect();
         assert_eq!(suite_folders(&dev_launcher_core::catalog::LAUNCHER, &roots), want);
         let photo = CraftApp::by_id("photocraft").unwrap();
         assert!(suite_folders(photo, &roots).is_empty());
