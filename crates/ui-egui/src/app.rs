@@ -907,6 +907,10 @@ impl LauncherUi {
         egui::CentralPanel::default()
             .frame(egui::Frame::new().fill(tokens.bg).inner_margin(egui::Margin { left: 20, right: 20, top: 18, bottom: 0 }))
             .show(ui, |ui| {
+                // The blueprint behind everything, edge to edge (the frame's margins included).
+                let panel = ui.max_rect() + egui::Margin { left: 20, right: 20, top: 18, bottom: 0 };
+                let painter = ui.painter().with_clip_rect(panel);
+                crate::backdrop::paint(ui.ctx(), &painter, panel, &tokens, self.reduce_motion);
                 self.toolbar(ui);
                 ui.add_space(18.0);
                 let ids = self.visible_ids();
