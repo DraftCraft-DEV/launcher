@@ -1118,12 +1118,13 @@ impl LauncherUi {
                     let r = egui::Frame::new()
                         .fill(t.bg)
                         .stroke(egui::Stroke::new(1.0, t.line_strong))
+                        .corner_radius(theme::CARD_RADIUS)
                         .shadow(theme::shadow(&t))
                         .inner_margin(egui::Margin::symmetric(14, 10))
                         .show(ui, |ui| {
                             ui.horizontal(|ui| {
                                 let (rect, _) = ui.allocate_exact_size(egui::vec2(6.0, 6.0), egui::Sense::hover());
-                                ui.painter().rect_filled(rect, egui::CornerRadius::ZERO, accent);
+                                ui.painter().rect_filled(rect, egui::CornerRadius::same(3), accent);
                                 ui.add(egui::Label::new(egui::RichText::new(crate::i18n::msg(&toast.text)).color(t.ink)).wrap());
                             });
                         });

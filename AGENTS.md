@@ -80,7 +80,9 @@ settings file must produce an error the user can act on, never a panic.
 
 ### Look and feel
 
-Hard square corners, 1 px hairlines instead of shadows, Archivo for headings and app names, Inter
+Soft rounded corners (`theme::RADIUS`, 6 px, for buttons, inputs, chips and menus;
+`theme::CARD_RADIUS`, 10 px, for cards, dialogs and panels; cards stand apart with a gap), 1 px
+hairlines instead of shadows, Archivo for headings and app names, Inter
 for body text, upper-case Geist Mono labels and buttons, colours from `theme::Tokens` by name.
 Build new UI from `widgets.rs`; never hard-code a colour. Animations follow the OS's reduce-motion
 setting (`crates/ui-egui/src/motion.rs`).

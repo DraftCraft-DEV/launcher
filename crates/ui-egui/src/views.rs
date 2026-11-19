@@ -153,6 +153,8 @@ pub(crate) const FOOTER_H: f32 = 34.0;
 
 const CARD_MIN_W: f32 = 320.0;
 const CARD_H: f32 = 314.0;
+/// The gap between neighbouring cards in the grid.
+const CARD_GAP: f32 = 12.0;
 /// The app column's name and tagline sizes, to centre them on the icon.
 const TITLE_SIZE: f32 = 16.0;
 const TAGLINE_SIZE: f32 = 12.0;
@@ -226,6 +228,7 @@ impl LauncherUi {
         egui::Frame::new()
             .fill(tint(t.accent, if t.dark { 0.10 } else { 0.07 }))
             .stroke(Stroke::new(1.0, tint(t.accent, 0.6)))
+            .corner_radius(theme::RADIUS)
             .inner_margin(egui::Margin::symmetric(16, 10))
             .show(ui, |ui| {
                 ui.horizontal(|ui| {
@@ -407,27 +410,30 @@ impl LauncherUi {
         let shown: Vec<dev_launcher_core::feed::Notice> =
             self.announcements.iter().filter(|n| !self.settings.dismissed_notices.contains(&n.id)).take(3).cloned().collect();
         for notice in shown {
-            egui::Frame::new().fill(t.sunken).stroke(t.hairline()).inner_margin(egui::Margin::symmetric(14, 10)).show(ui, |ui| {
-                ui.horizontal(|ui| {
-                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Min), |ui| {
-                        if widgets::glyph_button(ui, widgets::Glyph::Close, tl!("Dismiss")).clicked() {
-                            self.settings.dismissed_notices.insert(notice.id.clone());
-                        }
-                        if let Some(link) = &notice.link {
-                            widgets::hud_link(ui, tl!("Learn more"), link);
-                        }
-                        ui.with_layout(egui::Layout::top_down(egui::Align::Min), |ui| {
-                            ui.spacing_mut().item_spacing.y = 2.0;
-                            if !notice.title.is_empty() {
-                                ui.label(RichText::new(&notice.title).family(theme::semibold()).color(t.ink_strong));
+            egui::Frame::new().fill(t.sunken).stroke(t.hairline()).corner_radius(theme::RADIUS).inner_margin(egui::Margin::symmetric(14, 10)).show(
+                ui,
+                |ui| {
+                    ui.horizontal(|ui| {
+                        ui.with_layout(egui::Layout::right_to_left(egui::Align::Min), |ui| {
+                            if widgets::glyph_button(ui, widgets::Glyph::Close, tl!("Dismiss")).clicked() {
+                                self.settings.dismissed_notices.insert(notice.id.clone());
                             }
-                            if !notice.body.is_empty() {
-                                ui.add(egui::Label::new(RichText::new(&notice.body).color(t.muted)).wrap());
+                            if let Some(link) = &notice.link {
+                                widgets::hud_link(ui, tl!("Learn more"), link);
                             }
+                            ui.with_layout(egui::Layout::top_down(egui::Align::Min), |ui| {
+                                ui.spacing_mut().item_spacing.y = 2.0;
+                                if !notice.title.is_empty() {
+                                    ui.label(RichText::new(&notice.title).family(theme::semibold()).color(t.ink_strong));
+                                }
+                                if !notice.body.is_empty() {
+                                    ui.add(egui::Label::new(RichText::new(&notice.body).color(t.muted)).wrap());
+                                }
+                            });
                         });
                     });
-                });
-            });
+                },
+            );
             ui.add_space(8.0);
         }
     }
@@ -538,15 +544,15 @@ impl LauncherUi {
             return;
         }
         let width = ui.available_width();
-        // Neighbouring cards share their 1 px hairline, like the site's `gap-px` grid.
-        let cols = ((width / CARD_MIN_W).floor() as usize).max(1);
-        let card_w = (width + (cols as f32 - 1.0)) / cols as f32;
+        // Each card is its own rounded box, with a gap between neighbours.
+        let cols = (((width + CARD_GAP) / (CARD_MIN_W + CARD_GAP)).floor() as usize).max(1);
+        let card_w = ((width - (cols as f32 - 1.0) * CARD_GAP) / cols as f32).max(1.0);
         let rows = ids.len().div_ceil(cols);
-        let height = rows as f32 * (CARD_H - 1.0) + 1.0;
+        let height = rows as f32 * (CARD_H + CARD_GAP) - CARD_GAP;
         let (area, _) = ui.allocate_exact_size(vec2(width, height), Sense::hover());
         for (i, id) in ids.iter().enumerate() {
             let (row, col) = (i / cols, i % cols);
-            let min = area.min + vec2(col as f32 * (card_w - 1.0), row as f32 * (CARD_H - 1.0));
+            let min = area.min + vec2(col as f32 * (card_w + CARD_GAP), row as f32 * (CARD_H + CARD_GAP));
             self.card(ui, id, Rect::from_min_size(min, vec2(card_w, CARD_H)));
         }
     }
@@ -581,12 +587,12 @@ impl LauncherUi {
         let painter = ui.painter_at(rect.expand(16.0));
         // A faint wash in the app's colour fades in under the pointer.
         let fill = t.bg.lerp_to_gamma(app_color, 0.05 * lift);
-        painter.rect(rect, CornerRadius::ZERO, fill, t.hairline(), egui::StrokeKind::Inside);
+        painter.rect(rect, theme::CARD_RADIUS, fill, t.hairline(), egui::StrokeKind::Inside);
         // On hover, a 2 px rule in the app's colour wipes in from the left along the top, inside the
-        // hairlines the card shares with its neighbours (the site's rule sits within its grid gaps).
+        // card's hairline, following its rounded top corners.
         if lift > 0.0 {
             let inside = rect.shrink(1.0);
-            painter.rect_filled(Rect::from_min_size(inside.min, vec2(inside.width() * lift, 2.0)), CornerRadius::ZERO, app_color);
+            painter.rect_filled(theme::top_stripe(inside, lift), CornerRadius::same(1), app_color);
         }
 
         // The top strip: the version in the app's colour, and its GitHub page.
@@ -714,20 +720,23 @@ impl LauncherUi {
         let span = ui.available_rect_before_wrap().x_range();
         let grip_w = self.grip_w(ui, ids);
 
-        egui::Frame::new().fill(t.bg).stroke(t.hairline()).inner_margin(egui::Margin::symmetric(16, 0)).show(ui, |ui| {
-            TableBuilder::new(ui)
-                .striped(false)
-                .vscroll(false)
-                .cell_layout(egui::Layout::left_to_right(egui::Align::Center))
-                .column(Column::remainder().at_least(220.0).clip(true))
-                .column(Column::exact(176.0))
-                .column(Column::exact(150.0))
-                .column(Column::exact(132.0))
-                .column(Column::exact(104.0))
-                .column(Column::exact(206.0 + grip_w))
-                .header(42.0, |header| self.table_header(header, &mut sort_clicked, &t, span, clip))
-                .body(|body| self.table_rows(body, ids, &t, (title_h, tagline_h), now, (span, clip)));
-        });
+        egui::Frame::new().fill(t.bg).stroke(t.hairline()).corner_radius(theme::CARD_RADIUS).inner_margin(egui::Margin::symmetric(16, 0)).show(
+            ui,
+            |ui| {
+                TableBuilder::new(ui)
+                    .striped(false)
+                    .vscroll(false)
+                    .cell_layout(egui::Layout::left_to_right(egui::Align::Center))
+                    .column(Column::remainder().at_least(220.0).clip(true))
+                    .column(Column::exact(176.0))
+                    .column(Column::exact(150.0))
+                    .column(Column::exact(132.0))
+                    .column(Column::exact(104.0))
+                    .column(Column::exact(206.0 + grip_w))
+                    .header(42.0, |header| self.table_header(header, &mut sort_clicked, &t, span, clip))
+                    .body(|body| self.table_rows(body, ids, &t, (title_h, tagline_h), now, (span, clip)));
+            },
+        );
         if let Some(k) = sort_clicked {
             if self.settings.sort == k {
                 self.settings.sort_descending = !self.settings.sort_descending;

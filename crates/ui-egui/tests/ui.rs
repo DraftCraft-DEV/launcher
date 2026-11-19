@@ -2531,6 +2531,8 @@ fn all_opened(h: &mut Harness<'_, Option<LauncherUi>>, label: &str) -> Vec<Strin
 /// opens a repository releases page.
 fn links_open_the_right_pages() {
     let (mut h, _) = harness(ViewMode::Grid, egui::Theme::Dark, true);
+    // Tall enough that every card is drawn (cards below the fold aren't).
+    h.set_size(egui::vec2(1180.0, 1800.0));
     h.run_steps(6);
     assert_eq!(click_opens(&mut h, "Discord").as_deref(), Some("https://discord.gg/YgRK8Eww9x"));
     // The footer's D.E.V. links and each card's own pages.

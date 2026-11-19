@@ -150,9 +150,9 @@ impl LauncherUi {
             .show(ctx, |ui| {
                 ui.set_opacity(k.clamp(0.0, 1.0));
                 let painter = ui.painter();
-                painter.add(theme::shadow(t).as_shape(panel, CornerRadius::ZERO));
-                painter.rect_filled(panel, CornerRadius::ZERO, t.bg);
-                painter.rect_stroke(panel, CornerRadius::ZERO, Stroke::new(1.0, t.line_strong), egui::StrokeKind::Inside);
+                painter.add(theme::shadow(t).as_shape(panel, theme::CARD_RADIUS));
+                painter.rect_filled(panel, theme::CARD_RADIUS, t.bg);
+                painter.rect_stroke(panel, theme::CARD_RADIUS, Stroke::new(1.0, t.line_strong), egui::StrokeKind::Inside);
 
                 ui.set_min_size(panel.size());
                 ui.set_max_size(panel.size());
@@ -313,23 +313,27 @@ impl LauncherUi {
         let app = entry.app;
         let app_color = rgb(app.color);
         let status = entry.status(self.platform, self.caps.manage_apps);
-        let hero = egui::Frame::new().fill(tint(app_color, if t.dark { 0.09 } else { 0.07 })).inner_margin(Margin::same(PAD as i8)).show(ui, |ui| {
-            ui.set_width(ui.available_width());
-            ui.horizontal(|ui| {
-                widgets::hud(ui, tl!("App details"), t.faint);
-                self.hero_top_row(ui, around, t);
+        let hero = egui::Frame::new()
+            .fill(tint(app_color, if t.dark { 0.09 } else { 0.07 }))
+            .corner_radius(theme::top_radius(theme::CARD_RADIUS))
+            .inner_margin(Margin::same(PAD as i8))
+            .show(ui, |ui| {
+                ui.set_width(ui.available_width());
+                ui.horizontal(|ui| {
+                    widgets::hud(ui, tl!("App details"), t.faint);
+                    self.hero_top_row(ui, around, t);
+                });
+                self.hero_identity(ui, entry, details, &status, t, wide);
+                ui.add_space(14.0);
+                // The menu leaves out the links: they are the buttons right below.
+                if !wide {
+                    let row_w = ui.available_width();
+                    ui.horizontal(|ui| self.actions_in(ui, entry, &status, row_w, crate::views::Place::Details));
+                }
+                link_buttons(ui, app);
             });
-            self.hero_identity(ui, entry, details, &status, t, wide);
-            ui.add_space(14.0);
-            // The menu leaves out the links: they are the buttons right below.
-            if !wide {
-                let row_w = ui.available_width();
-                ui.horizontal(|ui| self.actions_in(ui, entry, &status, row_w, crate::views::Place::Details));
-            }
-            link_buttons(ui, app);
-        });
         let r = hero.response.rect;
-        ui.painter().rect_filled(Rect::from_min_size(r.min, vec2(r.width(), 2.0)), CornerRadius::ZERO, app_color);
+        ui.painter().rect_filled(theme::top_stripe(r, 1.0), CornerRadius::same(1), app_color);
         ui.painter().hline(r.x_range(), r.bottom() - 0.5, t.hairline());
     }
 
@@ -415,7 +419,7 @@ impl LauncherUi {
         for pair in facts.chunks(per_row) {
             ui.columns(per_row, |cols| {
                 for (col, (label, value)) in cols.iter_mut().zip(pair) {
-                    egui::Frame::new().stroke(t.hairline()).inner_margin(theme::BOX_MARGIN).show(col, |ui| {
+                    egui::Frame::new().stroke(t.hairline()).corner_radius(theme::RADIUS).inner_margin(theme::BOX_MARGIN).show(col, |ui| {
                         ui.set_width(ui.available_width());
                         ui.spacing_mut().item_spacing.y = 2.0;
                         widgets::hud(ui, label, t.faint);
@@ -456,7 +460,7 @@ impl LauncherUi {
                     // Flipped to a picture that hasn't arrived: the same frame, saying so.
                     None => placeholder(ui, pic, Id::unique("lightbox-placeholder"), failed.as_deref(), t, true),
                 }
-                ui.painter().rect_stroke(pic, CornerRadius::ZERO, Stroke::new(1.0, theme::backdrop_ink(40)), egui::StrokeKind::Outside);
+                ui.painter().rect_stroke(pic, theme::RADIUS, Stroke::new(1.0, theme::backdrop_ink(40)), egui::StrokeKind::Outside);
                 let caption = if count > 1 { format!("{} · {}/{count}", shot.caption, at + 1) } else { shot.caption.to_string() };
                 let ink = theme::backdrop_ink(190);
                 let galley = widgets::hud_galley(ui, &caption, ink);
@@ -509,7 +513,7 @@ impl LauncherUi {
                 rect
             }
         };
-        ui.painter().rect_stroke(pic, CornerRadius::ZERO, t.hairline(), egui::StrokeKind::Inside);
+        ui.painter().rect_stroke(pic, theme::RADIUS, t.hairline(), egui::StrokeKind::Inside);
         let count = details.shots.len();
         if count < 2 {
             widgets::hud(ui, current.caption, t.faint);
@@ -538,7 +542,7 @@ impl LauncherUi {
                     // Too small for words: a blank frame, still there to pick.
                     None => {
                         let (rect, resp) = ui.allocate_exact_size(size, Sense::click());
-                        ui.painter().rect_filled(rect, CornerRadius::ZERO, t.sunken);
+                        ui.painter().rect_filled(rect, theme::RADIUS, t.sunken);
                         resp
                     }
                 };
@@ -546,10 +550,10 @@ impl LauncherUi {
                 // they fade toward the page, not toward grey, in both themes.
                 if !selected {
                     let veil = if resp.hovered() { 0.25 } else { 0.55 };
-                    ui.painter().rect_filled(resp.rect, CornerRadius::ZERO, t.bg.gamma_multiply(veil));
+                    ui.painter().rect_filled(resp.rect, theme::RADIUS, t.bg.gamma_multiply(veil));
                 }
                 let stroke = if selected { Stroke::new(2.0, app_color) } else { t.hairline() };
-                ui.painter().rect_stroke(resp.rect, CornerRadius::ZERO, stroke, egui::StrokeKind::Inside);
+                ui.painter().rect_stroke(resp.rect, theme::RADIUS, stroke, egui::StrokeKind::Inside);
                 resp.widget_info(|| egui::WidgetInfo::labeled(egui::Role::Button, true, shot.caption));
                 if resp.on_hover_cursor(egui::CursorIcon::PointingHand).on_hover_text(shot.caption).clicked() {
                     self.detail_shot = i;
@@ -563,7 +567,7 @@ impl LauncherUi {
 /// is the reason the picture couldn't be had; without one it is still on its way.
 fn placeholder(ui: &mut Ui, rect: Rect, id: Id, failed: Option<&str>, t: &Tokens, over_backdrop: bool) {
     let text = if failed.is_some() { tl!("Pictures couldn't be loaded. Reopen this page to try again.") } else { tl!("Loading pictures…") };
-    ui.painter().rect_filled(rect, CornerRadius::ZERO, if over_backdrop { theme::backdrop_panel() } else { t.sunken });
+    ui.painter().rect_filled(rect, theme::RADIUS, if over_backdrop { theme::backdrop_panel() } else { t.sunken });
     let ink = if over_backdrop { theme::backdrop_ink(190) } else { t.faint };
     let galley = ui.painter().layout(text.to_string(), egui::FontId::proportional(13.5), ink, (rect.width() - 32.0).max(1.0));
     ui.painter().galley(rect.center() - galley.size() / 2.0, galley, ink);
@@ -579,7 +583,7 @@ fn step_button(ui: &mut Ui, left: bool, tip: &str, t: &Tokens) -> bool {
     let (rect, resp) = ui.allocate_exact_size(vec2(theme::CONTROL_H, theme::CONTROL_H), Sense::click());
     let (fill, ink) = if resp.hovered() { (t.invert_bg, t.invert_fg) } else { (Color32::TRANSPARENT, t.muted) };
     let painter = ui.painter();
-    painter.rect(rect, CornerRadius::ZERO, fill, t.hairline(), egui::StrokeKind::Inside);
+    painter.rect(rect, theme::RADIUS, fill, t.hairline(), egui::StrokeKind::Inside);
     let (c, s) = (rect.center(), if left { -1.0 } else { 1.0 });
     painter.add(egui::Shape::line(
         vec![pos2(c.x - s * 3.0, c.y - 5.5), pos2(c.x + s * 3.0, c.y), pos2(c.x - s * 3.0, c.y + 5.5)],
@@ -608,7 +612,7 @@ fn features(ui: &mut Ui, details: &AppDetails, app: &CraftApp, t: &Tokens) {
     widgets::eyebrow(ui, "01", tl!("Features"));
     ui.add_space(4.0);
     for (i, f) in details.features.iter().enumerate() {
-        egui::Frame::new().stroke(t.hairline()).inner_margin(theme::BOX_MARGIN).show(ui, |ui| {
+        egui::Frame::new().stroke(t.hairline()).corner_radius(theme::RADIUS).inner_margin(theme::BOX_MARGIN).show(ui, |ui| {
             ui.set_width(ui.available_width());
             ui.spacing_mut().item_spacing.y = 3.0;
             ui.horizontal(|ui| {
@@ -626,7 +630,7 @@ fn arrow_button(ui: &mut Ui, rect: Rect, id: Id, left: bool, tip: &str, t: &Toke
     let resp = ui.interact(rect, id, Sense::click());
     let (fill, ink) = if resp.hovered() { (t.invert_bg, t.invert_fg) } else { (t.bg.gamma_multiply(0.92), t.ink) };
     let painter = ui.painter();
-    painter.rect(rect, CornerRadius::ZERO, fill, Stroke::new(1.0, t.line_strong), egui::StrokeKind::Inside);
+    painter.rect(rect, theme::RADIUS, fill, Stroke::new(1.0, t.line_strong), egui::StrokeKind::Inside);
     let (c, s) = (rect.center(), if left { -1.0 } else { 1.0 });
     let points = vec![pos2(c.x - s * 3.5, c.y - 6.0), pos2(c.x + s * 3.5, c.y), pos2(c.x - s * 3.5, c.y + 6.0)];
     painter.add(egui::Shape::line(points, Stroke::new(1.75, ink)));

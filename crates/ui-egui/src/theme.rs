@@ -175,8 +175,8 @@ fn visuals(t: &Tokens) -> Visuals {
     v.faint_bg_color = t.sunken;
     v.code_bg_color = t.sunken;
     v.window_stroke = Stroke::new(1.0, t.line_strong);
-    v.window_corner_radius = CornerRadius::ZERO;
-    v.menu_corner_radius = CornerRadius::ZERO;
+    v.window_corner_radius = CARD_RADIUS;
+    v.menu_corner_radius = RADIUS;
     v.window_shadow = shadow(t);
     v.popup_shadow = shadow(t);
     v.override_text_color = Some(t.ink);
@@ -195,7 +195,7 @@ fn visuals(t: &Tokens) -> Visuals {
         w.bg_fill = fill;
         w.weak_bg_fill = fill;
         w.bg_stroke = Stroke::new(1.0, stroke);
-        w.corner_radius = CornerRadius::ZERO;
+        w.corner_radius = RADIUS;
         w.fg_stroke = Stroke::new(1.0, fg);
         w.expansion = 0.0;
     }
@@ -232,6 +232,32 @@ pub fn apply(ctx: &egui::Context, choice: ThemeChoice) {
 
 /// Height of buttons, inputs and filter cells (the site's medium button).
 pub const CONTROL_H: f32 = 34.0;
+
+/// Corner radius of buttons, inputs, chips and menus: D.E.V. Launcher's corners are soft.
+pub const RADIUS: CornerRadius = CornerRadius::same(6);
+/// Corner radius of cards, dialogs and panels.
+pub const CARD_RADIUS: CornerRadius = CornerRadius::same(10);
+
+/// Rounds only the top corners, for a band along the top of a rounded box.
+pub const fn top_radius(r: CornerRadius) -> CornerRadius {
+    CornerRadius { nw: r.nw, ne: r.ne, sw: 0, se: 0 }
+}
+
+/// A 2 px accent rule along the top of a rounded box, `frac` of the way across, kept clear of
+/// the rounded corners (a 2 px band can't follow a 10 px curve).
+pub fn top_stripe(r: egui::Rect, frac: f32) -> egui::Rect {
+    let inset = f32::from(CARD_RADIUS.nw);
+    let w = ((r.width() - 2.0 * inset) * frac.clamp(0.0, 1.0)).max(0.0);
+    egui::Rect::from_min_size(egui::pos2(r.min.x + inset, r.min.y), egui::vec2(w, 2.0))
+}
+
+/// The corners of cell `i` of `n` cells side by side in one rounded outline: the outer corners
+/// of the first and last cells are rounded, the inner ones square.
+pub fn segment_radius(i: usize, n: usize) -> CornerRadius {
+    let r = RADIUS.nw;
+    let (first, last) = (i == 0, i + 1 >= n);
+    CornerRadius { nw: if first { r } else { 0 }, sw: if first { r } else { 0 }, ne: if last { r } else { 0 }, se: if last { r } else { 0 } }
+}
 
 /// The site's `.hud-label`: 11 px Geist Mono 500, upper case, 0.15 em apart.
 pub const HUD_SIZE: f32 = 11.0;

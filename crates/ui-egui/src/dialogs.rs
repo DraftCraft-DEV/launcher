@@ -27,7 +27,12 @@ impl LauncherUi {
         let modal = egui::Modal::new(egui::Id::unique("dialog").with(dialog.key())).frame(if large {
             crate::sheet::frame(&t)
         } else {
-            egui::Frame::new().fill(t.bg).stroke(egui::Stroke::new(1.0, t.line_strong)).shadow(theme::shadow(&t)).inner_margin(theme::PAD as i8)
+            egui::Frame::new()
+                .fill(t.bg)
+                .stroke(egui::Stroke::new(1.0, t.line_strong))
+                .corner_radius(theme::CARD_RADIUS)
+                .shadow(theme::shadow(&t))
+                .inner_margin(theme::PAD as i8)
         });
         let mut close = false;
         let response = match &mut dialog {
@@ -65,7 +70,12 @@ impl LauncherUi {
         let Some(alert) = self.alerts.iter().find(|a| !self.settings.dismissed_notices.contains(&a.id)).cloned() else { return };
         let t = Tokens::get(ctx);
         let modal = egui::Modal::new(egui::Id::unique("feed_alert").with(&alert.id)).frame(
-            egui::Frame::new().fill(t.bg).stroke(egui::Stroke::new(1.0, t.line_strong)).shadow(theme::shadow(&t)).inner_margin(theme::PAD as i8),
+            egui::Frame::new()
+                .fill(t.bg)
+                .stroke(egui::Stroke::new(1.0, t.line_strong))
+                .corner_radius(theme::CARD_RADIUS)
+                .shadow(theme::shadow(&t))
+                .inner_margin(theme::PAD as i8),
         );
         let mut ok = false;
         modal.show(ctx, |ui| {
