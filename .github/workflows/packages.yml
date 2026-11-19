@@ -78,8 +78,12 @@ jobs:
           if (Test-Path (Join-Path $dir 'craft-ai-mcp.exe')) { throw 'the old AI gateway is still shipped' }
           $menu = Get-ChildItem "$env:APPDATA\Microsoft\Windows\Start Menu\Programs" -Recurse -Filter 'D.E.V. Launcher.lnk'
           if (-not $menu) { throw 'no Start menu shortcut' }
-          $ver = & $exe --version
-          if ($LASTEXITCODE -ne 0) { throw 'dev-launcher --version failed' }
+          # A GUI-subsystem exe: wait for it and read its output from a file, not a pipe.
+          $out = Join-Path $env:RUNNER_TEMP 'version.txt'
+          $p = Start-Process $exe -ArgumentList '--version' -RedirectStandardOutput $out -Wait -PassThru -NoNewWindow
+          if ($p.ExitCode -ne 0) { throw "dev-launcher --version exited $($p.ExitCode)" }
+          $ver = (Get-Content $out -Raw).Trim()
+          if ($ver -notlike 'dev-launcher *') { throw "unexpected --version output: $ver" }
           Write-Output "installed: $exe ($ver)"
           # The uninstall entry names our publisher, never ArtCraft.
           $entry = Get-ChildItem 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall' |
@@ -103,8 +107,8 @@ jobs:
           Expand-Archive $zip $out
           $exe = Get-ChildItem $out -Recurse -Filter dev-launcher.exe | Select-Object -First 1
           if (-not (Test-Path (Join-Path $exe.DirectoryName 'portable.txt'))) { throw 'portable.txt missing beside the exe' }
-          & $exe.FullName --version
-          if ($LASTEXITCODE -ne 0) { throw 'portable dev-launcher --version failed' }
+          $p = Start-Process $exe.FullName -ArgumentList '--version' -RedirectStandardOutput (Join-Path $env:RUNNER_TEMP 'pv.txt') -Wait -PassThru -NoNewWindow
+          if ($p.ExitCode -ne 0) { throw "portable dev-launcher --version exited $($p.ExitCode)" }
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: dev-launcher-windows-x64

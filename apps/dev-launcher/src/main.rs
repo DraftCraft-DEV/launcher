@@ -65,7 +65,9 @@ fn main() -> ExitCode {
         })
         .collect();
     if args.iter().any(|a| a == "--version" || a == "-V") {
-        println!("dev-launcher {}", env!("CARGO_PKG_VERSION"));
+        // Never `println!`: it panics when stdout is a closed pipe, which a GUI-subsystem exe on
+        // Windows gets when its caller stops reading. The version is best effort; exit cleanly.
+        let _ = write_version(&mut std::io::stdout());
         return ExitCode::SUCCESS;
     }
     // An elevated copy running one batch of MSI installs ("update all" behind one permission
@@ -1557,5 +1559,40 @@ mod tests {
         // egui would ask for the discrete GPU: on a PRIME laptop that's not the desktop's (issue #69).
         let expected = PowerPreference::from_env().unwrap_or(PowerPreference::None);
         assert_eq!(setup.power_preference, expected);
+    }
+}
+
+/// Writes `dev-launcher <version>` for `--version`, reporting a failed write instead of
+/// panicking as `println!` would.
+fn write_version(out: &mut impl std::io::Write) -> std::io::Result<()> {
+    writeln!(out, "dev-launcher {}", env!("CARGO_PKG_VERSION"))?;
+    out.flush()
+}
+
+#[cfg(test)]
+mod version_output_tests {
+    use super::write_version;
+
+    /// A pipe whose reader has gone: every write fails, as on Windows (os error 232).
+    struct ClosedPipe;
+    impl std::io::Write for ClosedPipe {
+        fn write(&mut self, _: &[u8]) -> std::io::Result<usize> {
+            Err(std::io::Error::new(std::io::ErrorKind::BrokenPipe, "The pipe is being closed."))
+        }
+        fn flush(&mut self) -> std::io::Result<()> {
+            Err(std::io::Error::new(std::io::ErrorKind::BrokenPipe, "The pipe is being closed."))
+        }
+    }
+
+    #[test]
+    fn version_to_a_closed_pipe_is_an_error_not_a_panic() {
+        assert!(write_version(&mut ClosedPipe).is_err());
+    }
+
+    #[test]
+    fn version_names_the_program_and_its_version() {
+        let mut out = Vec::new();
+        assert!(write_version(&mut out).is_ok());
+        assert_eq!(String::from_utf8_lossy(&out), format!("dev-launcher {}\n", env!("CARGO_PKG_VERSION")));
     }
 }
