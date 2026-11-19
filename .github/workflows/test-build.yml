@@ -1,0 +1,74 @@
+# Test builds of D.E.V. Launcher for the owner to download and try: the desktop app for Windows,
+# macOS and Linux, unsigned, attached to the run as artifacts (Actions › this run › Artifacts).
+# Standard GitHub actions only, so it runs in a private repository without extra subscriptions.
+# Not a release: nothing is published.
+name: Test build
+
+on:
+  push:
+    branches: [draftcraft-launcher]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: test-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Windows x64
+            os: windows-latest
+            artifact: dev-launcher-windows-x64
+            bin: dev-launcher.exe
+          - name: macOS (Apple silicon)
+            os: macos-latest
+            artifact: dev-launcher-macos-arm64
+            bin: dev-launcher
+          - name: Linux x86_64
+            os: ubuntu-22.04
+            artifact: dev-launcher-linux-x86_64
+            bin: dev-launcher
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Linux build dependencies
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libxkbcommon-dev libwayland-dev libx11-dev libxcursor-dev libxrandr-dev libxi-dev libdbus-1-dev pkg-config
+
+      - name: Rust
+        shell: bash
+        run: rustup toolchain install stable --profile minimal && rustup default stable
+
+      - name: Build
+        shell: bash
+        env:
+          DEV_LAUNCHER_BUILD_SHA: ${{ github.sha }}
+        run: cargo build --release --locked -p dev-launcher
+
+      - name: Collect
+        shell: bash
+        run: |
+          mkdir -p out
+          cp "target/release/${{ matrix.bin }}" out/
+          cp NOTICE LICENSE-MIT LICENSE-APACHE out/ 2>/dev/null || true
+          cat > out/README-TEST-BUILD.txt <<'EOF'
+          D.E.V. Launcher test build (unsigned).
+          Windows: run dev-launcher.exe; SmartScreen may warn: More info > Run anyway.
+          macOS: in Terminal, run: chmod +x dev-launcher && xattr -d com.apple.quarantine dev-launcher && ./dev-launcher
+          Linux: chmod +x dev-launcher && ./dev-launcher
+          EOF
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: ${{ matrix.artifact }}
+          path: out/
+          retention-days: 30
